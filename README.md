@@ -67,3 +67,9 @@ There are bugs!
 ![like this](docs/MegaBattle_2_at_1440p.png)
 
 Also, take care when editing the hero file names (in the `heroes` folder): if the file name contains any white space, the game fails to load it.
+
+## Original Author
+
+Augustin Preda, 2002
+
+![pic](units/z92.bmp)
