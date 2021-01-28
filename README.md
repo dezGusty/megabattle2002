@@ -41,3 +41,7 @@ The units on the map take turns to move and/or atack.
 ## Bugs
 
 There are bugs: the units may accidentally overlap!
+
+Also, the game does not use a fullscreen video mode. It will try to create a fullscreen sized window... BUT only the top-left corner of 800x600 shall be used. For instance, here's how it looks on a 2560x1440 screen.
+
+![like this](docs/MegaBattle_2_at_1440p.png)
