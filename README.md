@@ -12,6 +12,13 @@ It was developed using Borland C++ Builder, but if you can get your hand on a re
 Use the Launcher, this will allow you to choose the terrain (basically: background picture) and the combating armies.
 (Note: this stores data in `battle.ini`, so if the file cannot be written to, you may encounter errors).
 
+![launcher](docs/MegaBattle_2_launcher.jpg)
+
+From the launcher use the two top buttons to select the hero (and army) to use for each side.
+This will open a dialog to select a file from the `heroes` subdirectory where the hero and army configuration is stored.
+
+Launch the game with the `Launch Game >>>` button.
+
 The actual game executable shall read the `battle.ini` file (note: not an actual INI file) and use it to configure the battle.
 (Note: the game will try to write the battle result to battle.out in the same directory, so if the file cannot be written to, you may encounter errors.)
 (Why? I could not figure out I could use program arguments and return codes, and had a plan to have some sort of campaign, chaining battles together)
@@ -23,6 +30,17 @@ The units on the map take turns to move and/or atack.
   - there is no balance
   - I don't even remember why that is.
 - You cannot choose the direction from which you atack. Units will choose their (dumb) path to their target.
+
+## Creating heroes for play
+
+You can use the Hero Editor (`HeroEdit.exe`) to create new hero configurations or to edit existing ones.
+
+![hero edit](docs/MegaBattle_2_HeroEdit.png)
+
+⚠ Don't use space characters for your hero file name. E.g.
+
+- "hero_2021.DTA" - ok ✔
+- "hello 2021.DTA" - bad ❌
 
 ## Graphics
 
@@ -40,8 +58,12 @@ The units on the map take turns to move and/or atack.
 
 ## Bugs
 
-There are bugs: the units may accidentally overlap!
+There are bugs!
 
-Also, the game does not use a fullscreen video mode. It will try to create a fullscreen sized window... BUT only the top-left corner of 800x600 shall be used. For instance, here's how it looks on a 2560x1440 screen.
+🤦‍♂️the units may accidentally overlap!
+
+❗ Also, the game does not use a fullscreen video mode. It will try to create a fullscreen sized window... BUT only the top-left corner of 800x600 shall be used. For instance, here's how it looks on a 2560x1440 screen.
 
 ![like this](docs/MegaBattle_2_at_1440p.png)
+
+Also, take care when editing the hero file names (in the `heroes` folder): if the file name contains any white space, the game fails to load it.
