@@ -1,0 +1,11 @@
+Nume erou:
+^thetester2
+(level, exp,exp max, hp, hp max, moves max, dmg min, dmg max, armor, protection%, chance, upkeep,
+imag asoc, port asoc, ranged (bool), ammo, retaliate, y position)
+;Numarul de mercenari angajati:
+^1
+;Statisticile eroului:
+^12 29 120 55 55 4 15 20 3 20 85 0 1 1 1 50 0 0
+;Mercenarii cu stats lor:
+^3 4 30 150 150 3 6 11 0 5 7 2 0 0 0 -1 1 4
+^

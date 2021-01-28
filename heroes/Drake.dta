@@ -1,0 +1,13 @@
+Nume erou:
+^Drake_the_Wicked
+(level, exp,exp max, hp, hp max, moves max, dmg min, dmg max, armor, protection%, chance, upkeep,
+imag asoc, port asoc, ranged(bool), ammo, retaliate, y position)
+;Numarul de mercenari angajati:
+^3
+;Statisticile eroului:
+^11 89 110 90 90 5 15 25 3 30 95 0 3 3 0 -1 2 0
+;Mercenarii cu stats lor:
+^1 9 10 70 70 3 13 18 2 20 75 6 5 5 0 -1 1 2
+^3 4 30 60 60 3 6 14 1 15 75 4 2 2 0 -1 1 4
+^5 42 50 55 55 3 8 11 0 0 80 2 0 0 0 -1 1 6
+^

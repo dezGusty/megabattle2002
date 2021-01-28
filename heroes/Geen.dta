@@ -1,0 +1,14 @@
+Nume erou:
+^Lord_Geen'ga'shu
+(level, exp,exp max, hp, hp max, moves max, dmg min, dmg max, armor, protection%, chance, upkeep,
+imag asoc, port asoc, ranged (bool), ammo, retaliate, y position)
+;Numarul de mercenari angajati:
+^4
+;Statisticile eroului:
+^12 29 120 55 55 4 15 20 3 20 85 0 1 1 1 50 0 0
+;Mercenarii cu stats lor:
+^1 9 10 75 75 3 16 17 4 20 80 8 6 6 0 -1 1 2
+^2 12 20 40 40 3 8 12 1 10 80 5 4 4 1 28 0 3
+^3 4 30 60 60 3 6 14 1 15 75 4 2 2 0 -1 1 4
+^5 44 50 40 40 3 6 10 0 10 80 2 1 1 1 18 0 5
+^

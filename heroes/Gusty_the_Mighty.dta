@@ -1,0 +1,13 @@
+Nume erou:
+^Gusty_the_Mighty
+(level, exp,exp max, hp, hp max, moves max, dmg min, dmg max, armor, protection%, chance, upkeep,
+imag asoc, port asoc, ranged, ammo, retaliate, y position)
+;Numarul de mercenari angajati:
+^3
+;Statisticile eroului:
+^12 29 120 55 55 5 25 26 4 30 85 0 2 1 0 -1 2 0
+;Mercenarii cu stats lor:
+^1 9 10 30 30 3 8 12 0 20 85 4 3 3 0 -1 1 2
+^1 0 10 30 30 3 8 12 0 20 85 4 3 3 0 -1 1 4
+^1 2 10 30 30 3 8 12 0 20 85 4 3 3 0 -1 1 6
+^
