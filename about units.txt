@@ -1,0 +1,11 @@
+imagini
+0:peasant
+1:peasant archer
+2:human pikeman
+3:lizard swordsman (berserker)
+4:crossbow unit
+5:human halberdier
+6:human paladin
+7:human longbowman
+8:magic sprite
+9:elemental
