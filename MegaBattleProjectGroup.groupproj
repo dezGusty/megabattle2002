@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{C5EBF7B2-EEFC-4953-984B-653EF52FAEEA}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="HeroEdit.cbproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="MegaBattle2.cbproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="HeroEdit">
+        <MSBuild Projects="HeroEdit.cbproj"/>
+    </Target>
+    <Target Name="HeroEdit:Clean">
+        <MSBuild Projects="HeroEdit.cbproj" Targets="Clean"/>
+    </Target>
+    <Target Name="HeroEdit:Make">
+        <MSBuild Projects="HeroEdit.cbproj" Targets="Make"/>
+    </Target>
+    <Target Name="MegaBattle2">
+        <MSBuild Projects="MegaBattle2.cbproj"/>
+    </Target>
+    <Target Name="MegaBattle2:Clean">
+        <MSBuild Projects="MegaBattle2.cbproj" Targets="Clean"/>
+    </Target>
+    <Target Name="MegaBattle2:Make">
+        <MSBuild Projects="MegaBattle2.cbproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="HeroEdit;MegaBattle2"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="HeroEdit:Clean;MegaBattle2:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="HeroEdit:Make;MegaBattle2:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
