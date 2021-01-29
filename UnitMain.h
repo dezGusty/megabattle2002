@@ -12,8 +12,9 @@
 #include "UTLogicButton.h"
 #include <ExtCtrls.hpp>
 #include <Graphics.hpp>
-#include <MPlayer.hpp>
-#include <Menus.hpp>//pt btns
+#include <Vcl.MPlayer.hpp>
+#include <Menus.hpp>
+#include <System.ImageList.hpp>//pt btns
 //---------------------------------------------------------------------------
 typedef struct
 {int x,y;
