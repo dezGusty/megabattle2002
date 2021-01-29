@@ -137,6 +137,9 @@
         <ResFiles Include="HeroEdit.res">
             <BuildOrder>5</BuildOrder>
         </ResFiles>
+        <None Include="HeroEditPCH1.h">
+            <BuildOrder>4</BuildOrder>
+        </None>
         <CppCompile Include="MainUnit.cpp">
             <Form>EditForm</Form>
             <FormType>dfm</FormType>

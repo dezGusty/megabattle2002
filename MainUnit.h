@@ -2,16 +2,14 @@
 #ifndef MainUnitH
 #define MainUnitH
 //---------------------------------------------------------------------------
-#include <stdio.h>
-#include <stdlib.h>
-#include <Classes.hpp>
-#include <Controls.hpp>
-#include <StdCtrls.hpp>
-#include <Forms.hpp>
-#include <Menus.hpp>
-#include <ExtCtrls.hpp>
-#include <ComCtrls.hpp>
-#include <Dialogs.hpp>
+#include <System.Classes.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.StdCtrls.hpp>
+#include <Vcl.Forms.hpp>
+#include <Vcl.ExtCtrls.hpp>
+#include <Vcl.Dialogs.hpp>
+#include <Vcl.ComCtrls.hpp>
+#include <Vcl.Menus.hpp>
 //---------------------------------------------------------------------------
 class TEditForm : public TForm
 {
@@ -66,10 +64,8 @@ __published:	// IDE-managed Components
 private:	// User declarations
 public:		// User declarations
         AnsiString DirectorJoc;
-        void __citeste(FILE *ff){char c;do{fscanf(ff,"%c",&c);}while(c!='^' && !feof(ff));}
         void ResetariDate();
-        void ScrieUnitate(FILE *ff,int fel,int level,int y_position);
-        __fastcall TEditForm(TComponent* Owner);
+		__fastcall TEditForm(TComponent* Owner);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TEditForm *EditForm;

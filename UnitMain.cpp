@@ -74,7 +74,7 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
               Muta(GetPosX(X,Y),GetPosY(X,Y));
          if(Cursor==TCursor(2))//atac
            if(ExistaCoord(X,Y))
-             if(Player[SelectedPlayer]->slot[SelectedSlot]->Ranged && Player[SelectedPlayer]->slot[SelectedSlot]->Ammo>0)
+             if(Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo>0)
                AtacArcas(GetPosX(X,Y),GetPosY(X,Y));
              else AtacNormal(GetPosX(X,Y),GetPosY(X,Y));
         }
@@ -104,7 +104,7 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 }
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormMouseMove(TObject *Sender,
-      TShiftState Shift, int X, int Y)
+	  TShiftState Shift, int X, int Y)
 {if(WaitingForOrder)
   {MouseX=X;
    MouseY=Y;
@@ -297,8 +297,9 @@ void TBattleForm::_DesenUnitati()
   for(int i=0;i<9;i++)
    if(teren[i][j])
    {int tjuc=teren[i][j]/20;
-    int tlot=teren[i][j]%10;
-    Player[tjuc]->slot[tlot]->Draw(ImagUnit,CanvasLucru);
+	int tlot=teren[i][j]%10;
+	SoldierDraw(*Player[tjuc]->army_slots[tlot],ImagUnit,CanvasLucru);
+//	Player[tjuc]->army_slots[tlot]->Draw(ImagUnit,CanvasLucru);
    }
  Canvas->CopyRect(battleRect,CanvasLucru,battleRect);
 }
@@ -322,7 +323,7 @@ void TBattleForm::_InitializariMatrice()
  for(i=0;i<9;i++)for(j=0;j<7;j++)teren[i][j]=0;
  for(i=0;i<2;i++)
    for(j=0;j<=Player[i]->angajati;j++)
-     teren[Player[i]->slot[j]->x][Player[i]->slot[j]->y]=10+i*10+j;
+	 teren[Player[i]->army_slots[j]->x][Player[i]->army_slots[j]->y]=10+i*10+j;
 }
 //---------------------------------------------------------------------------
 void TBattleForm::_InitializariMatriceS()
@@ -356,25 +357,25 @@ void TBattleForm::_PuneUnitate(TCanvas *UnCanvas,int x,int y)
  if(kappa) if(ShowHexes) _DesenHex(UnCanvas,x,y,0);
  if(teren[x][y]!=0)
      {tjuc=teren[x][y]/20;
-      tlot=teren[x][y]%10;
-      Player[tjuc]->slot[tlot]->Draw(ImagUnit,UnCanvas);
+	  tlot=teren[x][y]%10;
+      SoldierDraw(*Player[tjuc]->army_slots[tlot], ImagUnit,UnCanvas);
      }
 }
 //---------------------------------------------------------------------------
 void TBattleForm::AIAflaOrdin()
 {AITimer->Enabled=false;
  int tempx,tempy;
- int mt=Player[SelectedPlayer]->slot[SelectedSlot]->MovesLeft;
- SeteazaHex(Player[SelectedPlayer]->slot[SelectedSlot]->x,Player[SelectedPlayer]->slot[SelectedSlot]->y,mt);
- if(Player[SelectedPlayer]->slot[SelectedSlot]->Ranged && Player[SelectedPlayer]->slot[SelectedSlot]->Ammo>0)
-   SeteazaHexArcas(Player[SelectedPlayer]->slot[SelectedSlot]->x,Player[SelectedPlayer]->slot[SelectedSlot]->y);
+ int mt=Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
+ SeteazaHex(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y,mt);
+ if(Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo>0)
+   SeteazaHexArcas(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y);
  AI_find_target(tempx,tempy);
  if(tempx==-1 && tempy==-1)//adica nu s-a gasit vreo tinta de atacat;
    {AI_GasesteMutare(tempx,tempy);
     Muta(tempx,tempy);
    }
  else
-  {if(Player[SelectedPlayer]->slot[SelectedSlot]->Ranged && Player[SelectedPlayer]->slot[SelectedSlot]->Ammo>0)
+  {if(Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo>0)
      AtacArcas(tempx,tempy);
    else AtacNormal(tempx,tempy);
   }
@@ -383,7 +384,7 @@ void TBattleForm::AIAflaOrdin()
 void TBattleForm::AI_find_target(int &tempx,int &tempy)
 {int oponent=(SelectedPlayer+1)%2;
  float raport=500;//din cate lovituri iese un kill;
- int meddmg=(Player[SelectedPlayer]->slot[SelectedSlot]->DamageMax+Player[SelectedPlayer]->slot[SelectedSlot]->DamageMin)/2;
+ int meddmg=(Player[SelectedPlayer]->army_slots[SelectedSlot]->DamageMax+Player[SelectedPlayer]->army_slots[SelectedSlot]->DamageMin)/2;
  int curent;//slotul inamicului selectat
  int i,j;//pt parcurgerea matricei
  for(i=0;i<=8;i++)
@@ -391,19 +392,19 @@ void TBattleForm::AI_find_target(int &tempx,int &tempy)
      if(selected[i][j]==2 && teren[i][j] && teren[i][j]/20==oponent)
        {int lot=teren[i][j]%10;
         int k=meddmg;
-        k-=Player[oponent]->slot[lot]->Armor;
-        k-=k*Player[oponent]->slot[lot]->Protection/100;
-        if(Player[SelectedPlayer]->slot[SelectedSlot]->Ranged && Player[SelectedPlayer]->slot[SelectedSlot]->Ammo==0) k/=2;
+		k-=Player[oponent]->army_slots[lot]->Armor;
+		k-=k*Player[oponent]->army_slots[lot]->Protection/100;
+		if(Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo==0) k/=2;
         if(k<=0) k=1;
-        float tempraport=Player[oponent]->slot[lot]->Hp/k;
+		float tempraport=Player[oponent]->army_slots[lot]->Hp/k;
         if(raport>tempraport)
          {raport=tempraport;
           curent=lot;
          }
        }
  if(raport!=500)
-  {tempx=Player[oponent]->slot[curent]->x;
-   tempy=Player[oponent]->slot[curent]->y;}
+  {tempx=Player[oponent]->army_slots[curent]->x;
+   tempy=Player[oponent]->army_slots[curent]->y;}
  else
   {tempx=-1;
    tempy=-1;}
@@ -412,29 +413,29 @@ void TBattleForm::AI_find_target(int &tempx,int &tempy)
 void TBattleForm::AI_GasesteMutare(int &tempx,int &tempy)
 {int oponent=(SelectedPlayer+1)%2;
  float raport=500;//din cate lovituri iese un kill;
- int meddmg=(Player[SelectedPlayer]->slot[SelectedSlot]->DamageMax+Player[SelectedPlayer]->slot[SelectedSlot]->DamageMin)/2;
+ int meddmg=(Player[SelectedPlayer]->army_slots[SelectedSlot]->DamageMax+Player[SelectedPlayer]->army_slots[SelectedSlot]->DamageMin)/2;
  int curent;//slotul inamicului selectat
  for(int lot=0;lot<=Player[oponent]->angajati;lot++)
-    if(Player[oponent]->slot[lot]->alive)
+	if(Player[oponent]->army_slots[lot]->alive)
        {int k=meddmg;
-        k-=Player[oponent]->slot[lot]->Armor;
-        k-=k*Player[oponent]->slot[lot]->Protection/100;
-        if(Player[SelectedPlayer]->slot[SelectedSlot]->Ranged && Player[SelectedPlayer]->slot[SelectedSlot]->Ammo==0) k/=2;
+		k-=Player[oponent]->army_slots[lot]->Armor;
+		k-=k*Player[oponent]->army_slots[lot]->Protection/100;
+		if(Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo==0) k/=2;
         if(k<=0) k=1;
-        float tempraport=Player[oponent]->slot[lot]->Hp/k;
+        float tempraport=Player[oponent]->army_slots[lot]->Hp/k;
         if(raport>tempraport)
          {raport=tempraport;
           curent=lot;
          }
        }
- int tx=Player[oponent]->slot[curent]->x;
- int ty=Player[oponent]->slot[curent]->y;
- int x=Player[SelectedPlayer]->slot[SelectedSlot]->x;
- int y=Player[SelectedPlayer]->slot[SelectedSlot]->y;
- int mut=Player[SelectedPlayer]->slot[SelectedSlot]->MovesLeft;
- for(int i=0;i<mut;i++)
-   {int aok=0;
-    if(y>ty) if(x>tx){if(ExistaHex2(x,y,STGSUS))
+ int tx=Player[oponent]->army_slots[curent]->x;
+ int ty=Player[oponent]->army_slots[curent]->y;
+ int x=Player[SelectedPlayer]->army_slots[SelectedSlot]->x;
+ int y=Player[SelectedPlayer]->army_slots[SelectedSlot]->y;
+ int mut=Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
+ for(int i = 0; i < mut ; i++){
+	int aok = 0;
+	if ( y > ty ) if(x>tx){if(ExistaHex2(x,y,STGSUS))
                       {x=GetX(x,y,STGSUS);y=GetY(x,y,STGSUS);aok=1;}}
              else {if(ExistaHex2(x,y,DRPSUS))
                    {x=GetX(x,y,DRPSUS);y=GetY(x,y,DRPSUS);aok=1;}}
@@ -447,12 +448,13 @@ void TBattleForm::AI_GasesteMutare(int &tempx,int &tempy)
              else {if(ExistaHex2(x,y,DRPJOS))
                    {x=GetX(x,y,DRPJOS);y=GetY(x,y,DRPJOS);aok=1;}}
    }
- tempx=x;tempy=y;
+ tempx=x;
+ tempy=y;
 }
 //---------------------------------------------------------------------------
 void TBattleForm::AtacArcas(int tintax,int tintay)
-{if(Player[SelectedPlayer]->slot[SelectedSlot]->Ammo>0)
-  {Player[SelectedPlayer]->slot[SelectedSlot]->Ammo--;
+{if(Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo>0)
+  {Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo--;
    ExecutaAtac(tintax,tintay,true);
    ::Sleep(200);
    SelecteazaUrmator();
@@ -463,8 +465,8 @@ void TBattleForm::AtacNormal(int tintax,int tintay)
 {TargetX=tintax;
  TargetY=tintay;
  PathwasFound=false;
- int mt=Player[SelectedPlayer]->slot[SelectedSlot]->MovesLeft;
- PathFinding(Player[SelectedPlayer]->slot[SelectedSlot]->x,Player[SelectedPlayer]->slot[SelectedSlot]->y,mt,0);
+ int mt=Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
+ PathFinding(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y,mt,0);
  StergeHexuriSelectate();
  for(int i=1;i<=mt;i++)
     {if(TargetX==path[i].x && TargetY==path[i].y) i=mt+1;
@@ -530,26 +532,26 @@ void TBattleForm::ExecutaAtac(int tx,int ty,bool range)
  int lot=SelectedSlot;
  int k=random(100)+1;
 // MessageDlg(k,mtInformation,TMsgDlgButtons() <<mbOK,0);
- if(k<=Player[juc]->slot[lot]->ChancesToHit)
-   {int auxx=Player[juc]->slot[lot]->DamageMax-Player[juc]->slot[lot]->DamageMin;
-    k=Player[juc]->slot[lot]->DamageMin + random(auxx);
-    k-=Player[tjuc]->slot[tlot]->Armor;
-    k-=k*Player[tjuc]->slot[tlot]->Protection/100;
-    if(Player[SelectedPlayer]->slot[SelectedSlot]->Ranged && Player[SelectedPlayer]->slot[SelectedSlot]->Ammo<=0) k/=2;
+ if(k<=Player[juc]->army_slots[lot]->ChancesToHit)
+   {int auxx=Player[juc]->army_slots[lot]->DamageMax-Player[juc]->army_slots[lot]->DamageMin;
+    k=Player[juc]->army_slots[lot]->DamageMin + random(auxx);
+	k-=Player[tjuc]->army_slots[tlot]->Armor;
+	k-=k*Player[tjuc]->army_slots[tlot]->Protection/100;
+	if(Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo<=0) k/=2;
     if(k<=0) k=1;
     ShowComment(juc,lot,k,0);
     if(!range)
       {__canta(MediaPlayer1);
-       DisplayAtac(Player[tjuc]->slot[tlot]->x,Player[tjuc]->slot[tlot]->y,0);
+	   DisplayAtac(Player[tjuc]->army_slots[tlot]->x,Player[tjuc]->army_slots[tlot]->y,0);
       }
     else
       {__canta(MediaPlayer2);
-       DisplayAtac(Player[tjuc]->slot[tlot]->x,Player[tjuc]->slot[tlot]->y,2);
+	   DisplayAtac(Player[tjuc]->army_slots[tlot]->x,Player[tjuc]->army_slots[tlot]->y,2);
       }
-    Player[tjuc]->slot[tlot]->Hp -= k;
-    if(Player[tjuc]->slot[tlot]->Hp<=0)
+	Player[tjuc]->army_slots[tlot]->Hp -= k;
+	if(Player[tjuc]->army_slots[tlot]->Hp<=0)
      {teren[tx][ty]=0;
-      Player[tjuc]->slot[tlot]->alive=false;
+	  Player[tjuc]->army_slots[tlot]->alive=false;
       __canta(MediaPlayer5);
       Selecteaza(tx,ty,false,0);
      }
@@ -557,34 +559,34 @@ void TBattleForm::ExecutaAtac(int tx,int ty,bool range)
  else
    {ShowComment(juc,lot,0,0);
     __canta(MediaPlayer4);
-    DisplayAtac(Player[tjuc]->slot[tlot]->x,Player[tjuc]->slot[tlot]->y,1);
+	DisplayAtac(Player[tjuc]->army_slots[tlot]->x,Player[tjuc]->army_slots[tlot]->y,1);
    }
  //urmeaza retaliation
- if(!range && Player[tjuc]->slot[tlot]->alive && Player[tjuc]->slot[tlot]->Retal>0)
+ if(!range && Player[tjuc]->army_slots[tlot]->alive && Player[tjuc]->army_slots[tlot]->Retal>0)
   {::Sleep(250);
-   Player[tjuc]->slot[tlot]->Retal--;
+   Player[tjuc]->army_slots[tlot]->Retal--;
    k=random(100)+1;
 //   MessageDlg(k,mtInformation,TMsgDlgButtons() <<mbOK,0);
-   if(k<=Player[tjuc]->slot[tlot]->ChancesToHit)
-    {k=Player[tjuc]->slot[tlot]->DamageMin + random(Player[tjuc]->slot[tlot]->DamageMax - Player[tjuc]->slot[tlot]->DamageMin);
-     k-=Player[juc]->slot[lot]->Armor;
-     k-=k*Player[juc]->slot[lot]->Protection/100;
+   if(k<=Player[tjuc]->army_slots[tlot]->ChancesToHit)
+	{k=Player[tjuc]->army_slots[tlot]->DamageMin + random(Player[tjuc]->army_slots[tlot]->DamageMax - Player[tjuc]->army_slots[tlot]->DamageMin);
+	 k-=Player[juc]->army_slots[lot]->Armor;
+	 k-=k*Player[juc]->army_slots[lot]->Protection/100;
      if(k<=0) k=1;
      ShowComment(tjuc,tlot,k,1);
      __canta(MediaPlayer1);
-     DisplayAtac(Player[juc]->slot[lot]->x,Player[juc]->slot[lot]->y,0);
-     Player[juc]->slot[lot]->Hp -= k;
-     if(Player[juc]->slot[lot]->Hp<=0)
-       {teren[Player[juc]->slot[lot]->x][Player[juc]->slot[lot]->y]=0;
-        Player[juc]->slot[lot]->alive=false;
+	 DisplayAtac(Player[juc]->army_slots[lot]->x,Player[juc]->army_slots[lot]->y,0);
+	 Player[juc]->army_slots[lot]->Hp -= k;
+	 if(Player[juc]->army_slots[lot]->Hp<=0)
+	   {teren[Player[juc]->army_slots[lot]->x][Player[juc]->army_slots[lot]->y]=0;
+		Player[juc]->army_slots[lot]->alive=false;
         __canta(MediaPlayer5);
-        Selecteaza(Player[juc]->slot[lot]->x,Player[juc]->slot[lot]->y,false,0);
+        Selecteaza(Player[juc]->army_slots[lot]->x,Player[juc]->army_slots[lot]->y,false,0);
        }
     }
    else
     {ShowComment(tjuc,tlot,0,1);
      __canta(MediaPlayer4);
-     DisplayAtac(Player[juc]->slot[lot]->x,Player[juc]->slot[lot]->y,1);
+     DisplayAtac(Player[juc]->army_slots[lot]->x,Player[juc]->army_slots[lot]->y,1);
     }
   }
 }
@@ -708,8 +710,8 @@ void TBattleForm::IntraInJoc()
  //setari pt jucatori
  for(int i=0;i<=1;i++)
    for(int j=0;j<=Player[i]->angajati;j++)
-     if(i==1){Player[i]->slot[j]->x=8;
-              Player[i]->slot[j]->Orientare=1;
+	 if(i==1){Player[i]->army_slots[j]->x=8;
+			  Player[i]->army_slots[j]->Orientare=1;
              }
  _CursoareInitializari();
  _InitializariMatrice();
@@ -733,12 +735,12 @@ void TBattleForm::Joc()
  _InitializariMatriceS();
  _DesenUnitati();
  Canvas->CopyRect(allRect,CanvasLucru,allRect);
- int mt=Player[SelectedPlayer]->slot[SelectedSlot]->MovesLeft;
- SeteazaHex(Player[SelectedPlayer]->slot[SelectedSlot]->x,Player[SelectedPlayer]->slot[SelectedSlot]->y,mt);
- if(Player[SelectedPlayer]->slot[SelectedSlot]->Ranged && Player[SelectedPlayer]->slot[SelectedSlot]->Ammo>0)
-   SeteazaHexArcas(Player[SelectedPlayer]->slot[SelectedSlot]->x,Player[SelectedPlayer]->slot[SelectedSlot]->y);
+ int mt=Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
+ SeteazaHex(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y,mt);
+ if(Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo>0)
+   SeteazaHexArcas(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y);
  DesenHexuriSelectate();
- Selecteaza(Player[SelectedPlayer]->slot[SelectedSlot]->x,Player[SelectedPlayer]->slot[SelectedSlot]->y,1,1);
+ Selecteaza(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y,1,1);
  button[0]=new TLogicButton;
  button[0]->Left=0;
  button[0]->Top=550;
@@ -765,8 +767,8 @@ inline void TBattleForm::Muta(int newx,int newy)
 {TargetX=newx;
  TargetY=newy;
  PathwasFound=false;
- int mt=Player[SelectedPlayer]->slot[SelectedSlot]->MovesLeft;
- PathFinding(Player[SelectedPlayer]->slot[SelectedSlot]->x,Player[SelectedPlayer]->slot[SelectedSlot]->y,mt,0);
+ int mt=Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
+ PathFinding(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y,mt,0);
  StergeHexuriSelectate();
  for(int i=1;i<=mt;i++)
     {MutaUnitate(path[i].x,path[i].y);
@@ -779,14 +781,14 @@ inline void TBattleForm::Muta(int newx,int newy)
 }
 //---------------------------------------------------------------------------
 inline void TBattleForm::MutaUnitate(int newx,int newy)
-{int tx=Player[SelectedPlayer]->slot[SelectedSlot]->x;
- int ty=Player[SelectedPlayer]->slot[SelectedSlot]->y;
+{int tx=Player[SelectedPlayer]->army_slots[SelectedSlot]->x;
+ int ty=Player[SelectedPlayer]->army_slots[SelectedSlot]->y;
  if(newx!=tx || newy!=ty)
    {__canta(MediaPlayer3);
     Selecteaza(tx,ty,false,0);
     teren[tx][ty]=0;
-    Player[SelectedPlayer]->slot[SelectedSlot]->x=newx;
-    Player[SelectedPlayer]->slot[SelectedSlot]->y=newy;
+	Player[SelectedPlayer]->army_slots[SelectedSlot]->x=newx;
+	Player[SelectedPlayer]->army_slots[SelectedSlot]->y=newy;
     teren[newx][newy]=SelectedPlayer*10+SelectedSlot+10;
     Selecteaza(newx,newy,true,0);
    }
@@ -803,7 +805,7 @@ inline void TBattleForm::PathFinding(int x,int y,int mut,int pas)
      path[pas].y=y;
      if(TargetX==x && TargetY==y) PathwasFound=true;
      else
-      if((teren[x][y]==0)||(Player[SelectedPlayer]->slot[SelectedSlot]->x==x && Player[SelectedPlayer]->slot[SelectedSlot]->y==y))
+	  if((teren[x][y]==0)||(Player[SelectedPlayer]->army_slots[SelectedSlot]->x==x && Player[SelectedPlayer]->army_slots[SelectedSlot]->y==y))
       {int ordin[6]={STGSUS,DRPSUS,STG,DRP,STGJOS,DRPJOS};
        if(y>TargetY)//prioritate sus
          {if(x>TargetX)//prior stg
@@ -908,7 +910,9 @@ inline void TBattleForm::Selecteaza(int x,int y,bool ShowPlayer,int felhex)
    {//_DesenHex(CanvasFundal,x,y,4);
    }
 //desen unitate
- if(ShowPlayer && teren[x][y]) Player[juc]->slot[lot]->Draw(ImagUnit,CanvasFundal);
+ if(ShowPlayer && teren[x][y]) {
+ 	SoldierDraw(*Player[juc]->army_slots[lot], ImagUnit, CanvasFundal);
+ }
  if(ExistaHex(x,y,STGJOS))
    {int ax=GetX(x,y,STGJOS);int ay=GetY(x,y,STGJOS);_PuneUnitate(CanvasFundal,ax,ay);}
  if(ExistaHex(x,y,DRPJOS))
@@ -925,8 +929,8 @@ inline void TBattleForm::SelecteazaUrmator()
   {int exJuc=SelectedPlayer;
    int exSlot=SelectedSlot;
    //setari pt. mutari
-   if(Player[SelectedPlayer]->slot[SelectedSlot]->alive)
-     Player[SelectedPlayer]->slot[SelectedSlot]->MovesLeft=Player[SelectedPlayer]->slot[SelectedSlot]->MovesMax;
+   if(Player[SelectedPlayer]->army_slots[SelectedSlot]->alive)
+	 Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft=Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesMax;
    //cautarea urmatorului
    bool gasit=0;
    do
@@ -941,11 +945,11 @@ inline void TBattleForm::SelecteazaUrmator()
               SelectedPlayer=0;
              }
       if(__ExistaPlayer(SelectedPlayer,SelectedSlot))
-        if(Player[SelectedPlayer]->slot[SelectedSlot]->alive) gasit=1;
+		if(Player[SelectedPlayer]->army_slots[SelectedSlot]->alive) gasit=1;
      }
    while(!gasit);
    //setari pt retaliations
-   Player[SelectedPlayer]->slot[SelectedSlot]->Retal=Player[SelectedPlayer]->slot[SelectedSlot]->RetalNum;
+   Player[SelectedPlayer]->army_slots[SelectedSlot]->Retal=Player[SelectedPlayer]->army_slots[SelectedSlot]->RetalNum;
    //matricea selected e deja plina => s-o golim
    _InitializariMatriceS();
    //desenari de curatare a formului daca cel dinainte a fost human
@@ -958,14 +962,14 @@ inline void TBattleForm::SelecteazaUrmator()
     Canvas->CopyRect(battleRect,CanvasLucru,battleRect);
     }
     else
-     Selecteaza(Player[exJuc]->slot[exSlot]->x,Player[exJuc]->slot[exSlot]->y,1,0);
-    Selecteaza(Player[SelectedPlayer]->slot[SelectedSlot]->x,Player[SelectedPlayer]->slot[SelectedSlot]->y,1,1);
+	 Selecteaza(Player[exJuc]->army_slots[exSlot]->x,Player[exJuc]->army_slots[exSlot]->y,1,0);
+	Selecteaza(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y,1,1);
    // desenari (in asteptarea noii comenzi) valabil doar pt control uman
    if(Player[SelectedPlayer]->control==HUMAN)
-    {int mt=Player[SelectedPlayer]->slot[SelectedSlot]->MovesLeft;
-     SeteazaHex(Player[SelectedPlayer]->slot[SelectedSlot]->x,Player[SelectedPlayer]->slot[SelectedSlot]->y,mt);
-     if(Player[SelectedPlayer]->slot[SelectedSlot]->Ranged && Player[SelectedPlayer]->slot[SelectedSlot]->Ammo>0)
-       SeteazaHexArcas(Player[SelectedPlayer]->slot[SelectedSlot]->x,Player[SelectedPlayer]->slot[SelectedSlot]->y);
+    {int mt=Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
+	 SeteazaHex(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y,mt);
+	 if(Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo>0)
+	   SeteazaHexArcas(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y);
      DesenHexuriSelectate();
      Canvas->CopyRect(battleRect,CanvasLucru,battleRect);
      _CursoareSet0();
@@ -977,12 +981,11 @@ inline void TBattleForm::SelecteazaUrmator()
      AITimer->Enabled=true;//adica e gata sa recpeteze ordinele
   }
  else
-  {char buf[255];
-   sprintf(buf,"Battle won by %s\nCongratulations to the winner!",Player[k-1]->nume);
-   MessageDlg(buf, mtInformation, TMsgDlgButtons() << mbOK, 0);
-   FILE *f=fopen("Battle.out","w");
-   fprintf(f,"%d",k);
-   fclose(f);
+  {
+  std::string message("Battle won by ");
+  message.append(Player[k-1]->nume.c_str());
+  message.append("\nCongratulations to the winner!");
+   MessageDlg(message.c_str(), mtInformation, TMsgDlgButtons() << mbOK, 0);
    Close();
   }
 }
@@ -1038,11 +1041,11 @@ inline void TBattleForm::ShowComment(int juc,int lot,int damage,int position)
  CanvasLucru->CopyRect(cpyRect,CanvasFundal,cpyRect);
  char buf[255];
  if(position==0)
-   if(damage>0) sprintf(buf,"The %s succesfully attacked the enemy, dealing %d points of damage",Player[juc]->slot[lot]->GetNume().c_str(),damage);
-   else sprintf(buf,"The %s tried to attack the enemy, but failed miserably",Player[juc]->slot[lot]->GetNume().c_str(),damage);
+   if(damage>0) sprintf(buf,"The %s succesfully attacked the enemy, dealing %d points of damage",Player[juc]->army_slots[lot]->GetNume().c_str(),damage);
+   else sprintf(buf,"The %s tried to attack the enemy, but failed miserably",Player[juc]->army_slots[lot]->GetNume().c_str(),damage);
  else
-   if(damage>0) sprintf(buf,"The %s succesfully retaliated against the enemy, dealing %d points of damage",Player[juc]->slot[lot]->GetNume().c_str(),damage);
-   else sprintf(buf,"The %s tried to retaliate, but failed miserably",Player[juc]->slot[lot]->GetNume().c_str(),damage);
+   if(damage>0) sprintf(buf,"The %s succesfully retaliated against the enemy, dealing %d points of damage",Player[juc]->army_slots[lot]->GetNume().c_str(),damage);
+   else sprintf(buf,"The %s tried to retaliate, but failed miserably",Player[juc]->army_slots[lot]->GetNume().c_str(),damage);
  CanvasLucru->TextOut(75,555+20*position,buf);
  Canvas->CopyRect(cpyRect,CanvasLucru,cpyRect);
 }
@@ -1060,11 +1063,11 @@ int TBattleForm::Victorie()
  int i,alv;
  alv=0;
  for(i=0;i<=Player[0]->angajati;i++)
-   if(Player[0]->slot[i]->alive) alv=1;
+   if(Player[0]->army_slots[i]->alive) alv=1;
  if(!alv) ret=2;
  alv=0;
  for(i=0;i<=Player[1]->angajati;i++)
-   if(Player[1]->slot[i]->alive) alv=1;
+   if(Player[1]->army_slots[i]->alive) alv=1;
  if(!alv) ret=1;
  return ret;
 }
@@ -1076,7 +1079,7 @@ int TBattleForm::Victorie()
 void __fastcall TBattleForm::Surrender1Click(TObject *Sender)
 {int juc=SelectedPlayer;
  for(int i=0;i<=Player[juc]->angajati;i++)
-   Player[juc]->slot[i]->alive=false;
+   Player[juc]->army_slots[i]->alive=false;
  SelecteazaUrmator();
 }
 //---------------------------------------------------------------------------

@@ -30,3 +30,13 @@
 *.exe
 *.out
 *.app
+
+# C++ Builder specific temporary directories
+__history/
+__astcache/
+__recovery/
+
+Win32/
+MegaBattle2.cbproj.local
+HeroEdit.cbproj.local
+MegaBattleProjectGroup.groupproj.local

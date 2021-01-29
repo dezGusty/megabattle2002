@@ -1,13 +1,26 @@
 //---------------------------------------------------------------------------
 #include <vcl.h>
-#pragma hdrstop
+#include <tchar.h>
 
+#pragma hdrstop
 #include "MainUnit.h"
 #include "AboutUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 TEditForm *EditForm;
+
+void __citeste(FILE *ff)
+{
+	char c;
+	do
+	{
+		fscanf(ff,"%c",&c);
+	}
+	while(c!='^' && !feof(ff));
+}
+
+
 //---------------------------------------------------------------------------
 __fastcall TEditForm::TEditForm(TComponent* Owner)
         : TForm(Owner)
@@ -71,7 +84,7 @@ void TEditForm::ResetariDate()
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void TEditForm::ScrieUnitate(FILE *ff,int fel,int level,int y_position)
+void ScrieUnitate(FILE *ff,int fel,int level,int y_position)
 {int exp,exp_max, hp, hpmax, movesmax, dmg_min, dmg_max;
  int armor, protection, chance, upkeep,imag_asoc, port_asoc;
  int ranged, ammo, retaliate;
@@ -244,8 +257,8 @@ void __fastcall TEditForm::SaveCurrentHero1Click(TObject *Sender)
   if (SaveDialog1->Execute())
   {ff = fopen(SaveDialog1->FileName.c_str(), "wt");
     if (ff)
-     {int kappa=atoi(ComboBox1->Text.c_str());
-      if(kappa>=0)
+	 {int kappa=atoi(ComboBox1->Text.c_str());
+	  if(kappa>=0)
        {//pt erou;
         char nume[25];
         strcpy(nume,EditNumeErou->Text.c_str());
@@ -278,7 +291,7 @@ void __fastcall TEditForm::SaveCurrentHero1Click(TObject *Sender)
          }
         if(kappa>=5)
          {char cifra=Merc5->Text.c_str()[1];
-          int lvl=atoi(Edit5->Text.c_str());
+		  int lvl=atoi(Edit5->Text.c_str());
           ScrieUnitate(ff,cifra-48,lvl,5);
          }
         if(kappa>=6)

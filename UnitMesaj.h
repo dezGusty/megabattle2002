@@ -10,6 +10,7 @@
 #include <ExtCtrls.hpp>
 #include <Graphics.hpp>
 #include "UnitMain.h"
+#include <System.ImageList.hpp>
 //---------------------------------------------------------------------------
 class TMesaj : public TForm
 {__published:	// IDE-managed Components
@@ -21,7 +22,7 @@ private:	// User declarations
         void Deseneaza();
 public:		// User declarations
         int Juc,Lot;
-        int UDamage,UArmor,UProtection,UChance;
+		int UDamage,UArmor,UProtection,UChance;
         __fastcall TMesaj(TComponent* Owner,int tjuc,int tlot);
 };
 //---------------------------------------------------------------------------

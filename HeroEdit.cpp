@@ -1,24 +1,40 @@
 //---------------------------------------------------------------------------
+
 #include <vcl.h>
 #pragma hdrstop
-USERES("HeroEdit.res");
-USEFORM("MainUnit.cpp", EditForm);
-USEFORM("AboutUnit.cpp", FormHelp);
+#include <tchar.h>
 //---------------------------------------------------------------------------
-WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+USEFORM("HeroEdit.cpp", Form3);
+USEFORM("AboutUnit.cpp", FormHelp);
+USEFORM("MainUnit.cpp", EditForm);
+//---------------------------------------------------------------------------
+int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 {
-        try
-        {
-                 Application->Initialize();
-                 Application->Title = "Megalithic Editor";
-                 Application->CreateForm(__classid(TEditForm), &EditForm);
-                 Application->CreateForm(__classid(TFormHelp), &FormHelp);
-                 Application->Run();
-        }
-        catch (Exception &exception)
-        {
-                 Application->ShowException(&exception);
-        }
-        return 0;
+	try
+	{
+		Application->Initialize();
+		Application->Title = "Megalithic Editor";
+
+		Application->MainFormOnTaskBar = true;
+		Application->CreateForm(__classid(TFormHelp), &FormHelp);
+		Application->CreateForm(__classid(TEditForm), &EditForm);
+		Application->Run();
+	}
+	catch (Exception &exception)
+	{
+		Application->ShowException(&exception);
+	}
+	catch (...)
+	{
+		try
+		{
+			throw Exception("");
+		}
+		catch (Exception &exception)
+		{
+			Application->ShowException(&exception);
+		}
+	}
+	return 0;
 }
 //---------------------------------------------------------------------------

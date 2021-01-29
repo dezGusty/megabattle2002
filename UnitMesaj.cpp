@@ -40,33 +40,33 @@ void TMesaj::Deseneaza()
  Canvas->Brush->Color =(TColor)RGB(255, 175, 75);
  Canvas->Font->Color=(TColor)RGB(255, 175, 75);
  Canvas->Brush->Style = bsClear;
- int temp=BattleForm->Player[Juc]->slot[Lot]->PortretAsoc;
+ int temp=BattleForm->Player[Juc]->army_slots[Lot]->PortretAsoc;
  BattleForm->ImagPortret->Draw(Canvas,10,10,temp,true);
  Canvas->Font->Size=13;
- Canvas->TextOut(88,26,BattleForm->Player[Juc]->slot[Lot]->GetNume());
+ Canvas->TextOut(88,26,BattleForm->Player[Juc]->army_slots[Lot]->GetNume().c_str());
  Canvas->Font->Size=12;
- sprintf(buf,"Damage:%3d - %3d",BattleForm->Player[Juc]->slot[Lot]->DamageMin,BattleForm->Player[Juc]->slot[Lot]->DamageMax);
+ sprintf(buf,"Damage:%3d - %3d",BattleForm->Player[Juc]->army_slots[Lot]->DamageMin,BattleForm->Player[Juc]->army_slots[Lot]->DamageMax);
  Canvas->TextOut(30,80,buf);SmallIcons->Draw(Canvas,12,82,0,true);
- sprintf(buf,"Armor:%3d",BattleForm->Player[Juc]->slot[Lot]->Armor);
+ sprintf(buf,"Armor:%3d",BattleForm->Player[Juc]->army_slots[Lot]->Armor);
  Canvas->TextOut(30,95,buf);SmallIcons->Draw(Canvas,12,97,1,true);
- sprintf(buf,"Protection:%3d",BattleForm->Player[Juc]->slot[Lot]->Protection);
+ sprintf(buf,"Protection:%3d",BattleForm->Player[Juc]->army_slots[Lot]->Protection);
  Canvas->TextOut(30,110,buf);SmallIcons->Draw(Canvas,12,112,1,true);
- sprintf(buf,"Health:%3d/%3d",BattleForm->Player[Juc]->slot[Lot]->Hp,BattleForm->Player[Juc]->slot[Lot]->HpMax);
+ sprintf(buf,"Health:%3d/%3d",BattleForm->Player[Juc]->army_slots[Lot]->Hp,BattleForm->Player[Juc]->army_slots[Lot]->HpMax);
  Canvas->TextOut(30,125,buf);SmallIcons->Draw(Canvas,12,127,2,true);
- sprintf(buf,"Moves:%3d/%3d",BattleForm->Player[Juc]->slot[Lot]->MovesLeft,BattleForm->Player[Juc]->slot[Lot]->MovesMax);
+ sprintf(buf,"Moves:%3d/%3d",BattleForm->Player[Juc]->army_slots[Lot]->MovesLeft,BattleForm->Player[Juc]->army_slots[Lot]->MovesMax);
  Canvas->TextOut(30,140,buf);SmallIcons->Draw(Canvas,12,142,3,true);
- sprintf(buf,"Chances to hit:%3d\%",BattleForm->Player[Juc]->slot[Lot]->ChancesToHit);
+ sprintf(buf,"Chances to hit:%3d\%",BattleForm->Player[Juc]->army_slots[Lot]->ChancesToHit);
  Canvas->TextOut(30,155,buf);SmallIcons->Draw(Canvas,12,157,0,true);
- if(BattleForm->Player[Juc]->slot[Lot]->Ranged)
-  {sprintf(buf,"Ammunition:%3d",BattleForm->Player[Juc]->slot[Lot]->Ammo);
+ if(BattleForm->Player[Juc]->army_slots[Lot]->Ranged)
+  {sprintf(buf,"Ammunition:%3d",BattleForm->Player[Juc]->army_slots[Lot]->Ammo);
    Canvas->TextOut(30,170,buf);}
- sprintf(buf,"Retaliations:%3d/%3d",BattleForm->Player[Juc]->slot[Lot]->Retal,BattleForm->Player[Juc]->slot[Lot]->RetalNum);
+ sprintf(buf,"Retaliations:%3d/%3d",BattleForm->Player[Juc]->army_slots[Lot]->Retal,BattleForm->Player[Juc]->army_slots[Lot]->RetalNum);
  Canvas->TextOut(30,185,buf);SmallIcons->Draw(Canvas,12,187,4,true);
- sprintf(buf,"Level:%3d",BattleForm->Player[Juc]->slot[Lot]->Level);
+ sprintf(buf,"Level:%3d",BattleForm->Player[Juc]->army_slots[Lot]->Level);
  Canvas->TextOut(30,215,buf);SmallIcons->Draw(Canvas,12,217,4,true);
- sprintf(buf,"Experience:%3d/%3d",BattleForm->Player[Juc]->slot[Lot]->Xp,BattleForm->Player[Juc]->slot[Lot]->XpMax);
+ sprintf(buf,"Experience:%3d/%3d",BattleForm->Player[Juc]->army_slots[Lot]->Xp,BattleForm->Player[Juc]->army_slots[Lot]->XpMax);
  Canvas->TextOut(30,230,buf);
- sprintf(buf,"Upkeep:%3d",BattleForm->Player[Juc]->slot[Lot]->Upkeep);
+ sprintf(buf,"Upkeep:%3d",BattleForm->Player[Juc]->army_slots[Lot]->Upkeep);
  Canvas->TextOut(30,245,buf);
 }
 //---------------------------------------------------------------------------
