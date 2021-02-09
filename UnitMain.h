@@ -2,6 +2,7 @@
 #ifndef UnitMainH
 #define UnitMainH
 //---------------------------------------------------------------------------
+#include "src/terrain_type.h"
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -70,7 +71,7 @@ public:		// User declarations
         char fisier1[50];
         char fisier2[50];
         int control2;//juc 2 e comp;
-        int felteren;
+        TerrainType felteren;
         int FazaJoc;
         int selected[9][7];//matr selectarilor
         int teren[9][7];//matricea sistem
@@ -104,7 +105,7 @@ public:		// User declarations
         void _DesenHexuri();
         void _DesenUnitati();
         void _InitializariFundal();
-        void _InitializariImagini();
+		void LoadBattleBackgroundPictureForType(TerrainType terrain_type);
         void _InitializariMatrice();
         void _InitializariMatriceS();
         void _InitializariSunete();

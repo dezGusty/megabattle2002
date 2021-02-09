@@ -12,6 +12,7 @@
 #define COMPUTER 1
 #define HUMAN 0
 //---include-uri custom
+#include "src/terrain_type.h"
 #include "UnitMain.h"
 #include "UnitMesaj.h"
 //---------------------------------------------------------------------------
@@ -167,29 +168,36 @@ void __fastcall TBattleForm::FormPaint(TObject *Sender)
 void __fastcall TBattleForm::AITimerTimer(TObject *Sender)
 {AIAflaOrdin();
 }
+
 //---------------------------------------------------------------------------
-bool TBattleForm::__IncarcaINI()
-{bool ret=true;
- if(__exista("battle.ini"))
-  {FILE *f=fopen("battle.ini","rb");
-   felteren=1;ShowHexes=1;
-   __citeste(f);
-   fscanf(f,"%d",&ShowHexes);
-   __citeste(f);
-   fscanf(f,"%d",&control2);
-   __citeste(f);
-   fscanf(f,"%d",&felteren);
-   __citeste(f);
-   fscanf(f,"%s",fisier1);   Fisier1=fisier1;
-   __citeste(f);
-   fscanf(f,"%s",fisier2);   Fisier2=fisier2;
-// char ff[255];
-// sprintf(ff,"%s _ %s",Fisier1.c_str(),Fisier2.c_str());
-// MessageDlg(ff, mtInformation, TMsgDlgButtons() << mbOK, 0);
-   fclose(f);
-  }
- else ret=0;
- return ret;
+// Tries to load an INI file.
+// NOTE: Not an actual INI file :-o ...
+bool TBattleForm::__IncarcaINI() {
+	bool ret = true;
+	if (__exista("battle.ini")) {
+		FILE *f = fopen("battle.ini", "rb");
+		felteren = TerrainType::GrassPlains;
+		ShowHexes = 1;
+		__citeste(f);
+		fscanf(f, "%d", &ShowHexes);
+		__citeste(f);
+		fscanf(f, "%d", &control2);
+		__citeste(f);
+		fscanf(f, "%d", &felteren);
+		__citeste(f);
+		fscanf(f, "%s", fisier1);
+		Fisier1 = fisier1;
+		__citeste(f);
+		fscanf(f, "%s", fisier2);
+		Fisier2 = fisier2;
+		// char ff[255];
+		// sprintf(ff,"%s _ %s",Fisier1.c_str(),Fisier2.c_str());
+		// MessageDlg(ff, mtInformation, TMsgDlgButtons() << mbOK, 0);
+		fclose(f);
+	}
+	else
+		ret = 0;
+	return ret;
 }
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::DDrawStart()
@@ -242,19 +250,22 @@ void TBattleForm::_InitializariFundal()
  CanvasFundal->TextOut(290,270,"Press a key or click to begin combat");
  CanvasLucru->CopyRect(allRect,CanvasFundal,allRect);
 }
+
 //---------------------------------------------------------------------------
-void TBattleForm::_InitializariImagini()
-{ImagineTeren=new TImage(this);
- switch(felteren)
-  {case 1://iarba
-     if(__exista("Data\\teren1.bmp"))
-     ImagineTeren->Picture->LoadFromFile("Data\\teren1.bmp");
-   break;
-   case 2://iarba
-     if(__exista("Data\\teren2.bmp"))
-     ImagineTeren->Picture->LoadFromFile("Data\\teren2.bmp");
-   break;
-  }
+void TBattleForm::LoadBattleBackgroundPictureForType(TerrainType terrain_type) {
+	ImagineTeren = new TImage(this);
+	switch (felteren) {
+	case TerrainType::GrassPlains:
+		if (__exista("./img/grassy-field.bmp")) {
+			ImagineTeren->Picture->LoadFromFile("./img/grassy-field.bmp");
+		}
+		break;
+	case TerrainType::Dirt:
+		if (__exista("./img/cloudy-dirt.bmp")){
+			ImagineTeren->Picture->LoadFromFile("./img/cloudy-dirt.bmp");
+		}
+		break;
+	}
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -693,36 +704,53 @@ inline int TBattleForm::GetY(int x,int y,int dir)
    }
  return ret;
 }
+
 //---------------------------------------------------------------------------
-void TBattleForm::IntraInJoc()
-{__IncarcaINI();
- _InitializariImagini();
- FazaJoc=1;
- _DesenFundal();
- if(ShowHexes)_DesenHexuri();
- CanvasLucru->CopyRect(allRect,CanvasFundal,allRect);
- Canvas->CopyRect(allRect,CanvasLucru,allRect);
- Player[0]=new THero(fisier1);
- Player[1]=new THero(fisier2);
- Player[0]->control=HUMAN;
- if(control2) Player[1]->control=COMPUTER;
- else Player[1]->control=HUMAN;
- //setari pt jucatori
- for(int i=0;i<=1;i++)
-   for(int j=0;j<=Player[i]->angajati;j++)
-	 if(i==1){Player[i]->army_slots[j]->x=8;
-			  Player[i]->army_slots[j]->Orientare=1;
-             }
- _CursoareInitializari();
- _InitializariMatrice();
- _InitializariMatriceS();
- _DesenUnitati();
- //display logo
- CanvasFundal->Draw(50,550,logoImage->Picture->Bitmap);
- CanvasLucru->Draw(50,550,logoImage->Picture->Bitmap);
- Canvas->CopyRect(allRect,CanvasLucru,allRect);
- Joc();
+void TBattleForm::IntraInJoc() {
+	__IncarcaINI();
+
+	LoadBattleBackgroundPictureForType(felteren);
+
+	FazaJoc = 1;
+	_DesenFundal();
+	if (ShowHexes){
+		_DesenHexuri();
+	}
+
+	CanvasLucru->CopyRect(allRect, CanvasFundal, allRect);
+	Canvas->CopyRect(allRect, CanvasLucru, allRect);
+	Player[0] = new THero(fisier1);
+	Player[1] = new THero(fisier2);
+	Player[0]->control = HUMAN;
+	if (control2){
+		Player[1]->control = COMPUTER;
+	}
+	else{
+		Player[1]->control = HUMAN;
+	}
+
+	// set right-hand side player settings
+	for (int i = 0; i <= 1; i++) {
+		for (int j = 0; j <= Player[i]->angajati; j++) {
+			if (i == 1) {
+				Player[i]->army_slots[j]->x = 8;
+				Player[i]->army_slots[j]->Orientare = 1;
+			}
+		}
+	}
+
+	_CursoareInitializari();
+	_InitializariMatrice();
+	_InitializariMatriceS();
+	_DesenUnitati();
+
+	// display logo
+	CanvasFundal->Draw(50, 550, logoImage->Picture->Bitmap);
+	CanvasLucru->Draw(50, 550, logoImage->Picture->Bitmap);
+	Canvas->CopyRect(allRect, CanvasLucru, allRect);
+	Joc();
 }
+
 //---------------------------------------------------------------------------
 void TBattleForm::Joc()
 {SelectedPlayer=0;
@@ -955,7 +983,7 @@ inline void TBattleForm::SelecteazaUrmator()
    //desenari de curatare a formului daca cel dinainte a fost human
    if(Player[exJuc]->control==HUMAN)
     {//_DesenFundal();
-     CanvasFundal->Draw(10,10,ImagineTeren->Picture->Bitmap);
+	 CanvasFundal->Draw(10,10,ImagineTeren->Picture->Bitmap);
      if(ShowHexes)_DesenHexuri();
      else CanvasLucru->CopyRect(battleRect,CanvasFundal,battleRect);
      _DesenUnitati();
@@ -1083,4 +1111,3 @@ void __fastcall TBattleForm::Surrender1Click(TObject *Sender)
  SelecteazaUrmator();
 }
 //---------------------------------------------------------------------------
-

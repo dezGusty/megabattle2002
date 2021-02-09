@@ -6,10 +6,6 @@
 //---------------------------------------------------------------------------
 USEFORM("UnitMain.cpp", BattleForm);
 USEFORM("UnitMesaj.cpp", Mesaj);
-USERES("MegaBattle2.res");
-USEUNIT("UTSoldat.cpp");
-USERES("MCursors.res");
-USEUNIT("UTLogicButton.cpp");
 //---------------------------------------------------------------------------
 int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 {
