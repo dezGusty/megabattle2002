@@ -2,6 +2,7 @@
 #ifndef UnitMainH
 #define UnitMainH
 //---------------------------------------------------------------------------
+#include "src/simple_sound_action.h"
 #include "src/terrain_type.h"
 #include <Classes.hpp>
 #include <Controls.hpp>
@@ -92,51 +93,54 @@ public:		// User declarations
         TRect allRect;
         TRect battleRect;
         THero *Player[2];
-        bool __IncarcaINI();
-        void __canta(TMediaPlayer *UnP){UnP->Rewind();UnP->Play();}
-        void __citeste(FILE *ff){char c;do{fscanf(ff,"%c",&c);}while(c!='^' && !feof(ff));}
-        bool __exista(char *filename){return (access(filename, 0) == 0);}
-        void __xchng(int &v1,int &v2){int aux=v1;v1=v2;v2=aux;}
-        bool __ExistaPlayer(int juc,int lot){bool ret=true;if(juc>1 ||lot>Player[juc]->angajati) ret=false;return ret;}
-        void _CursoareInitializari();
-        void _CursoareSet0();
-        void _DesenFundal();
-        void _DesenHex(TCanvas *UnCanvas, int x, int y, int fel);
-        void _DesenHexuri();
-        void _DesenUnitati();
-        void _InitializariFundal();
+		bool __IncarcaINI();
+		void __citeste(FILE *ff){char c;do{fscanf(ff,"%c",&c);}while(c!='^' && !feof(ff));}
+		bool __exista(char *filename){return (access(filename, 0) == 0);}
+		bool __ExistaPlayer(int juc,int lot){bool ret=true;if(juc>1 ||lot>Player[juc]->angajati) ret=false;return ret;}
+		void _CursoareInitializari();
+		void _CursoareSet0();
+		void _DesenFundal();
+		void _DesenHex(TCanvas *UnCanvas, int x, int y, int fel);
+		void _DesenHexuri();
+		void _DesenUnitati();
+		void _InitializariFundal();
+		void _InitializariMatrice();
+		void _InitializariMatriceS();
+		void _InitializariSunete();
+		void _PuneUnitate(TCanvas *UnCanvas,int x,int y);
+		void AIAflaOrdin();
+		void AI_find_target(int &tempx,int &tempy);
+		void AI_GasesteMutare(int &tempx,int &tempy);
+		void AtacArcas(int tintax,int tintay);
+		void AtacNormal(int tintax,int tintay);
+		void DesenHexCopy(int x, int y, int fel);
+		void DesenHexuriSelectate();
+		void DisplayAtac(int x,int y,int felatac);
+		void ExecutaAtac(int tx,int ty,bool range);
+		bool ExistaCoord(int mx,int my);
+		bool ExistaHex(int x,int y,int dir);
+		bool ExistaHex2(int x,int y,int dir);
+		int GetPosX(int mx,int my);
+		int GetPosY(int mx,int my);
+		int GetX(int x,int y,int dir);
+		int GetY(int x,int y,int dir);
+		void IntraInJoc();
+
 		void LoadBattleBackgroundPictureForType(TerrainType terrain_type);
-        void _InitializariMatrice();
-        void _InitializariMatriceS();
-        void _InitializariSunete();
-        void _PuneUnitate(TCanvas *UnCanvas,int x,int y);
-        void AIAflaOrdin();
-        void AI_find_target(int &tempx,int &tempy);
-        void AI_GasesteMutare(int &tempx,int &tempy);
-        void AtacArcas(int tintax,int tintay);
-        void AtacNormal(int tintax,int tintay);
-        void DesenHexCopy(int x, int y, int fel);
-        void DesenHexuriSelectate();
-        void DisplayAtac(int x,int y,int felatac);
-        void ExecutaAtac(int tx,int ty,bool range);
-        bool ExistaCoord(int mx,int my);
-        bool ExistaHex(int x,int y,int dir);
-        bool ExistaHex2(int x,int y,int dir);
-        int GetPosX(int mx,int my);
-        int GetPosY(int mx,int my);
-        int GetX(int x,int y,int dir);
-        int GetY(int x,int y,int dir);
-        void IntraInJoc();
-        void Muta(int newx,int newy);
-        void MutaUnitate(int newx,int newy);
-        void OrdinSkipTurn();
-        void PathFinding(int x,int y,int mut,int pas);
-        void SeteazaHex(int x,int y,int mut);
-        void SeteazaHex2(int x,int y,int mut,int exdir);
-        void SeteazaHexArcas(int x,int y);
-        void ShowComment(int juc,int lot,int damage,int position);
-        void StergeHexuriSelectate();
-        void Joc();
+
+		void Muta(int newx,int newy);
+		void MutaUnitate(int newx,int newy);
+		void OrdinSkipTurn();
+		void PathFinding(int x,int y,int mut,int pas);
+
+		void PlaySoundForAction(SimpleSoundAction action);
+
+		void SeteazaHex(int x,int y,int mut);
+		void SeteazaHex2(int x,int y,int mut,int exdir);
+		void SeteazaHexArcas(int x,int y);
+		void ShowComment(int juc,int lot,int damage,int position);
+		void StergeHexuriSelectate();
+		void Joc();
         int Victorie();
         void Selecteaza(int x,int y,bool ShowPlayer,int felhex);
         void SelecteazaUrmator();

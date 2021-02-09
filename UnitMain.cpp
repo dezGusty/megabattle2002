@@ -551,54 +551,57 @@ void TBattleForm::ExecutaAtac(int tx,int ty,bool range)
 	if(Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo<=0) k/=2;
     if(k<=0) k=1;
     ShowComment(juc,lot,k,0);
-    if(!range)
-      {__canta(MediaPlayer1);
+	if(!range){
+		PlaySoundForAction(SimpleSoundAction::AttackHitMelee);
 	   DisplayAtac(Player[tjuc]->army_slots[tlot]->x,Player[tjuc]->army_slots[tlot]->y,0);
-      }
-    else
-      {__canta(MediaPlayer2);
+	  }
+	else
+	  {
+      PlaySoundForAction(SimpleSoundAction::AttackHitRange);
 	   DisplayAtac(Player[tjuc]->army_slots[tlot]->x,Player[tjuc]->army_slots[tlot]->y,2);
       }
 	Player[tjuc]->army_slots[tlot]->Hp -= k;
 	if(Player[tjuc]->army_slots[tlot]->Hp<=0)
      {teren[tx][ty]=0;
 	  Player[tjuc]->army_slots[tlot]->alive=false;
-      __canta(MediaPlayer5);
+	  PlaySoundForAction(SimpleSoundAction::Die);
       Selecteaza(tx,ty,false,0);
      }
    }
  else
    {ShowComment(juc,lot,0,0);
-    __canta(MediaPlayer4);
+    PlaySoundForAction(SimpleSoundAction::AttackMiss);
 	DisplayAtac(Player[tjuc]->army_slots[tlot]->x,Player[tjuc]->army_slots[tlot]->y,1);
    }
+
  //urmeaza retaliation
  if(!range && Player[tjuc]->army_slots[tlot]->alive && Player[tjuc]->army_slots[tlot]->Retal>0)
   {::Sleep(250);
    Player[tjuc]->army_slots[tlot]->Retal--;
    k=random(100)+1;
-//   MessageDlg(k,mtInformation,TMsgDlgButtons() <<mbOK,0);
    if(k<=Player[tjuc]->army_slots[tlot]->ChancesToHit)
 	{k=Player[tjuc]->army_slots[tlot]->DamageMin + random(Player[tjuc]->army_slots[tlot]->DamageMax - Player[tjuc]->army_slots[tlot]->DamageMin);
 	 k-=Player[juc]->army_slots[lot]->Armor;
 	 k-=k*Player[juc]->army_slots[lot]->Protection/100;
-     if(k<=0) k=1;
-     ShowComment(tjuc,tlot,k,1);
-     __canta(MediaPlayer1);
+	 if(k<=0) k=1;
+	 ShowComment(tjuc,tlot,k,1);
+	 PlaySoundForAction(SimpleSoundAction::AttackHitMelee);
 	 DisplayAtac(Player[juc]->army_slots[lot]->x,Player[juc]->army_slots[lot]->y,0);
 	 Player[juc]->army_slots[lot]->Hp -= k;
 	 if(Player[juc]->army_slots[lot]->Hp<=0)
 	   {teren[Player[juc]->army_slots[lot]->x][Player[juc]->army_slots[lot]->y]=0;
 		Player[juc]->army_slots[lot]->alive=false;
-        __canta(MediaPlayer5);
-        Selecteaza(Player[juc]->army_slots[lot]->x,Player[juc]->army_slots[lot]->y,false,0);
-       }
-    }
+		PlaySoundForAction(SimpleSoundAction::Die);
+
+		Selecteaza(Player[juc]->army_slots[lot]->x,Player[juc]->army_slots[lot]->y,false,0);
+	   }
+	}
    else
-    {ShowComment(tjuc,tlot,0,1);
-     __canta(MediaPlayer4);
-     DisplayAtac(Player[juc]->army_slots[lot]->x,Player[juc]->army_slots[lot]->y,1);
-    }
+	{
+		ShowComment(tjuc,tlot,0,1);
+		PlaySoundForAction(SimpleSoundAction::AttackMiss);
+	 DisplayAtac(Player[juc]->army_slots[lot]->x,Player[juc]->army_slots[lot]->y,1);
+	}
   }
 }
 //---------------------------------------------------------------------------
@@ -606,9 +609,9 @@ inline bool TBattleForm::ExistaCoord(int mx,int my)
 {bool ret=true;
  if(mx>20 && mx<780 && my>110 && my<530)
    {int fx=mx-20;
-    int fy=my-110;
-    fy/=60;
-    if((fy%2==1 && mx<60)||(fy%2==0 && mx>740)) ret=false;
+	int fy=my-110;
+	fy/=60;
+	if((fy%2==1 && mx<60)||(fy%2==0 && mx>740)) ret=false;
    }
  else ret=false;
  return ret;
@@ -619,20 +622,20 @@ inline bool TBattleForm::ExistaHex(int x,int y,int dir)
  if(x>=0 && x<9 && y>=0 && y<7)
    switch(dir)
    {case STGSUS:if(y<=0) ret=false;
-                else if(y%2==0)
-                       {if(x<=0) ret=false;}
-                break;
-    case STG:if(x<=0) ret=false;break;
-    case STGJOS:if(y>=6) ret=false;
-                else if(y%2==0)
-                       {if(x<=0) ret=false;}
-                break;
-    case DRPJOS:if(y>=6) ret=false;
-                else if(y%2==1)
-                       {if(x>=8) ret=false;}
-                break;
-    case DRP:if(x>=8) ret=false;break;
-    case DRPSUS:if(y<=0) ret=false;
+				else if(y%2==0)
+					   {if(x<=0) ret=false;}
+				break;
+	case STG:if(x<=0) ret=false;break;
+	case STGJOS:if(y>=6) ret=false;
+				else if(y%2==0)
+					   {if(x<=0) ret=false;}
+				break;
+	case DRPJOS:if(y>=6) ret=false;
+				else if(y%2==1)
+					   {if(x>=8) ret=false;}
+				break;
+	case DRP:if(x>=8) ret=false;break;
+	case DRPSUS:if(y<=0) ret=false;
                 else if(y%2==1)
                        {if(x>=8) ret=false;}
                 break;
@@ -812,7 +815,8 @@ inline void TBattleForm::MutaUnitate(int newx,int newy)
 {int tx=Player[SelectedPlayer]->army_slots[SelectedSlot]->x;
  int ty=Player[SelectedPlayer]->army_slots[SelectedSlot]->y;
  if(newx!=tx || newy!=ty)
-   {__canta(MediaPlayer3);
+   {
+   PlaySoundForAction(SimpleSoundAction::Move);
     Selecteaza(tx,ty,false,0);
     teren[tx][ty]=0;
 	Player[SelectedPlayer]->army_slots[SelectedSlot]->x=newx;
@@ -913,6 +917,37 @@ inline void TBattleForm::PathFinding(int x,int y,int mut,int pas)
            }
       }
     }
+}
+
+void DeplhiPlaySound(TMediaPlayer* player) {
+	player->Rewind();
+	player->Play();
+}
+
+/**
+ Plays a sound for a certain action.
+ */
+void TBattleForm::PlaySoundForAction(SimpleSoundAction action) {
+	switch (action) {
+	case SimpleSoundAction::AttackHitMelee:
+		DeplhiPlaySound(MediaPlayer1);
+		break;
+	case SimpleSoundAction::AttackHitRange:
+		DeplhiPlaySound(MediaPlayer2);
+		break;
+	case SimpleSoundAction::Move:
+		DeplhiPlaySound(MediaPlayer3);
+		break;
+	case SimpleSoundAction::AttackMiss:
+		DeplhiPlaySound(MediaPlayer4);
+		break;
+	case SimpleSoundAction::Die:
+		DeplhiPlaySound(MediaPlayer5);
+		break;
+
+	default: ;
+	}
+
 }
 
 //---------------------------------------------------------------------------
