@@ -11,8 +11,11 @@
 //constante control
 #define COMPUTER 1
 #define HUMAN 0
-//---include-uri custom
+
+// Other includes in this project.
 #include "src/terrain_type.h"
+#include "src/thirdparty/mini/ini.h"
+
 #include "UnitMain.h"
 #include "UnitMesaj.h"
 //---------------------------------------------------------------------------
@@ -173,31 +176,50 @@ void __fastcall TBattleForm::AITimerTimer(TObject *Sender)
 // Tries to load an INI file.
 // NOTE: Not an actual INI file :-o ...
 bool TBattleForm::__IncarcaINI() {
-	bool ret = true;
-	if (__exista("battle.ini")) {
-		FILE *f = fopen("battle.ini", "rb");
-		felteren = TerrainType::GrassPlains;
-		ShowHexes = 1;
-		__citeste(f);
-		fscanf(f, "%d", &ShowHexes);
-		__citeste(f);
-		fscanf(f, "%d", &control2);
-		__citeste(f);
-		fscanf(f, "%d", &felteren);
-		__citeste(f);
-		fscanf(f, "%s", fisier1);
-		Fisier1 = fisier1;
-		__citeste(f);
-		fscanf(f, "%s", fisier2);
-		Fisier2 = fisier2;
-		// char ff[255];
-		// sprintf(ff,"%s _ %s",Fisier1.c_str(),Fisier2.c_str());
-		// MessageDlg(ff, mtInformation, TMsgDlgButtons() << mbOK, 0);
-		fclose(f);
-	}
-	else
-		ret = 0;
-	return ret;
+
+	// first, create a file instance
+	mINI::INIFile file("battle.ini");
+
+	// next, create a structure that will hold data
+	mINI::INIStructure ini;
+
+	// now we can read the file
+	file.read(ini);
+
+	std::string::size_type sz;
+
+	// Load the settings
+
+	//# Only for esthetics for now
+	//# Terrain type impacts the picture drawn for the background
+	//# values
+	//#   1: Grass
+	//#   2: Dirt
+	std::string str_terrain_type = ini.get("battle").get("terrain");
+	int num_terrain_type = std::stoi (str_terrain_type,&sz);
+	felteren = static_cast<TerrainType>(num_terrain_type);
+
+	//# Shows or hides the hexes
+	//# values
+	//#   0: don't show hexes
+	//#   1: show hexes
+	std::string str_show_hexes = ini.get("battle").get("show_hexes");
+	ShowHexes = std::stoi (str_show_hexes,&sz);
+
+	//# Opponent type (right side player can be either human of CPU controlled; left side player is always HUMAN controlled)
+	//# values
+	//#   0: HUMAN
+	//#   1: CPU
+	std::string str_control2 = ini.get("battle").get("right_player_control");
+	control2 = std::stoi (str_control2,&sz);
+
+	//# Config file for left side hero and army
+	fisier1 = ini.get("battle").get("left_side_player_config");
+
+	//# Config file for right side hero and army
+	fisier2 = ini.get("battle").get("right_side_player_config");
+
+	return true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::DDrawStart()
@@ -722,8 +744,8 @@ void TBattleForm::IntraInJoc() {
 
 	CanvasLucru->CopyRect(allRect, CanvasFundal, allRect);
 	Canvas->CopyRect(allRect, CanvasLucru, allRect);
-	Player[0] = new THero(fisier1);
-	Player[1] = new THero(fisier2);
+	Player[0] = new THero(fisier1.c_str());
+	Player[1] = new THero(fisier2.c_str());
 	Player[0]->control = HUMAN;
 	if (control2){
 		Player[1]->control = COMPUTER;

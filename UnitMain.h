@@ -1,7 +1,18 @@
 //---------------------------------------------------------------------------
 #ifndef UnitMainH
 #define UnitMainH
+#include <System.Classes.hpp>
+#include <System.ImageList.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.ExtCtrls.hpp>
+#include <Vcl.Graphics.hpp>
+#include <Vcl.ImgList.hpp>
+#include <Vcl.Menus.hpp>
+#include <Vcl.MPlayer.hpp>
 //---------------------------------------------------------------------------
+
+#include <string>
+
 #include "src/simple_sound_action.h"
 #include "src/terrain_type.h"
 #include <Classes.hpp>
@@ -67,11 +78,12 @@ private:	// User declarations
 public:		// User declarations
         bool PathwasFound;
         bool ShowHexes;
-        bool WaitingForOrder;
-        AnsiString Fisier1,Fisier2;
-        char fisier1[50];
-        char fisier2[50];
-        int control2;//juc 2 e comp;
+		bool WaitingForOrder;
+
+		std::string fisier1;
+		std::string fisier2;
+
+		int control2;//juc 2 e comp;
         TerrainType felteren;
         int FazaJoc;
         int selected[9][7];//matr selectarilor
