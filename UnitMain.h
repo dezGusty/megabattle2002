@@ -13,6 +13,7 @@
 
 #include <string>
 
+#include "src/game.h"
 #include "src/simple_sound_action.h"
 #include "src/terrain_type.h"
 #include <Classes.hpp>
@@ -36,59 +37,59 @@ typedef struct
 class TBattleForm : public TForm
 {//friend TMesaj;
 __published:	// IDE-managed Components
-        TImageList *ImagHex;
-        TImageList *ImagBorder;
-        TImageList *ImagUnit;
-        TImageList *ImagPortret;
-        TImageList *ImagButon;
-        TImageList *ImagAtac;
-        TImage *logoImage;
-        TMediaPlayer *MediaPlayer1;
-        TMediaPlayer *MediaPlayer2;
-        TMediaPlayer *MediaPlayer3;
-        TMediaPlayer *MediaPlayer4;
-        TMediaPlayer *MediaPlayer5;
-        TTimer *AITimer;
-        TPopupMenu *PopupMenu1;
-        TMenuItem *Surrender1;
-        TMenuItem *N1;
-        TMenuItem *N2;
-        void __fastcall FormCreate(TObject *Sender);
-        void __fastcall FormPaint(TObject *Sender);
-        void __fastcall FormKeyDown(TObject *Sender, WORD &Key,
-          TShiftState Shift);
-        void __fastcall FormMouseDown(TObject *Sender, TMouseButton Button,
-          TShiftState Shift, int X, int Y);
-        void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
-        void __fastcall FormMouseMove(TObject *Sender, TShiftState Shift,
-          int X, int Y);
-        void __fastcall FormActivate(TObject *Sender);
-        void __fastcall FormMouseUp(TObject *Sender, TMouseButton Button,
-          TShiftState Shift, int X, int Y);
-        void __fastcall AITimerTimer(TObject *Sender);
-        void __fastcall Surrender1Click(TObject *Sender);
+		TImageList *ImagHex;
+		TImageList *ImagBorder;
+		TImageList *ImagUnit;
+		TImageList *ImagPortret;
+		TImageList *ImagButon;
+		TImageList *ImagAtac;
+		TImage *logoImage;
+		TMediaPlayer *MediaPlayer1;
+		TMediaPlayer *MediaPlayer2;
+		TMediaPlayer *MediaPlayer3;
+		TMediaPlayer *MediaPlayer4;
+		TMediaPlayer *MediaPlayer5;
+		TTimer *AITimer;
+		TPopupMenu *PopupMenu1;
+		TMenuItem *Surrender1;
+		TMenuItem *N1;
+		TMenuItem *N2;
+		void __fastcall FormCreate(TObject *Sender);
+		void __fastcall FormPaint(TObject *Sender);
+		void __fastcall FormKeyDown(TObject *Sender, WORD &Key,
+		  TShiftState Shift);
+		void __fastcall FormMouseDown(TObject *Sender, TMouseButton Button,
+		  TShiftState Shift, int X, int Y);
+		void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
+		void __fastcall FormMouseMove(TObject *Sender, TShiftState Shift,
+		  int X, int Y);
+		void __fastcall FormActivate(TObject *Sender);
+		void __fastcall FormMouseUp(TObject *Sender, TMouseButton Button,
+		  TShiftState Shift, int X, int Y);
+		void __fastcall AITimerTimer(TObject *Sender);
+		void __fastcall Surrender1Click(TObject *Sender);
 private:	// User declarations
-        LPDIRECTDRAW            lpDD;           // DirectDraw object
-        bool bActive;
-        void __fastcall DDrawStart();
-        HDC backgrounddc;
-        HBITMAP  bkbmp;
-        HDC workdc;
-        HBITMAP  wkbmp;
+		LPDIRECTDRAW            lpDD;           // DirectDraw object
+		bool bActive;
+		void __fastcall DDrawStart();
+		HDC backgrounddc;
+		HBITMAP  bkbmp;
+		HDC workdc;
+		HBITMAP  wkbmp;
 public:		// User declarations
-        bool PathwasFound;
-        bool ShowHexes;
+
+        Game game;
+
+		bool PathwasFound;
+		bool ShowHexes;
 		bool WaitingForOrder;
 
-		std::string fisier1;
-		std::string fisier2;
-
 		int control2;//juc 2 e comp;
-        TerrainType felteren;
-        int FazaJoc;
-        int selected[9][7];//matr selectarilor
-        int teren[9][7];//matricea sistem
-        int SelectedPlayer;
+		TerrainType felteren;
+		int FazaJoc;
+		int selected[9][7];//matr selectarilor
+		int teren[9][7];//matricea sistem
+		int SelectedPlayer;
         int SelectedSlot;
         int MouseSelectX;
         int MouseSelectY;

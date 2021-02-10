@@ -214,10 +214,10 @@ bool TBattleForm::__IncarcaINI() {
 	control2 = std::stoi (str_control2,&sz);
 
 	//# Config file for left side hero and army
-	fisier1 = ini.get("battle").get("left_side_player_config");
+	game.left_player_cfg_file = ini.get("battle").get("left_side_player_config");
 
 	//# Config file for right side hero and army
-	fisier2 = ini.get("battle").get("right_side_player_config");
+	game.right_player_cfg_file = ini.get("battle").get("right_side_player_config");
 
 	return true;
 }
@@ -744,8 +744,8 @@ void TBattleForm::IntraInJoc() {
 
 	CanvasLucru->CopyRect(allRect, CanvasFundal, allRect);
 	Canvas->CopyRect(allRect, CanvasLucru, allRect);
-	Player[0] = new THero(fisier1.c_str());
-	Player[1] = new THero(fisier2.c_str());
+	Player[0] = new THero(game.left_player_cfg_file.c_str());
+	Player[1] = new THero(game.right_player_cfg_file.c_str());
 	Player[0]->control = HUMAN;
 	if (control2){
 		Player[1]->control = COMPUTER;
