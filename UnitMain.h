@@ -15,7 +15,6 @@
 
 #include "src/game.h"
 #include "src/simple_sound_action.h"
-#include "src/terrain_type.h"
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -83,8 +82,6 @@ public:		// User declarations
 		bool PathwasFound;
 		bool WaitingForOrder;
 
-		int control2;//juc 2 e comp;
-		TerrainType felteren;
 		int FazaJoc;
 		int selected[9][7];//matr selectarilor
 		int teren[9][7];//matricea sistem
@@ -105,7 +102,6 @@ public:		// User declarations
         TRect allRect;
         TRect battleRect;
         THero *Player[2];
-		bool __IncarcaINI();
 		void __citeste(FILE *ff){char c;do{fscanf(ff,"%c",&c);}while(c!='^' && !feof(ff));}
 		bool __exista(char *filename){return (access(filename, 0) == 0);}
 		bool __ExistaPlayer(int juc,int lot){bool ret=true;if(juc>1 ||lot>Player[juc]->angajati) ret=false;return ret;}
