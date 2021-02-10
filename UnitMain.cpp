@@ -204,7 +204,7 @@ bool TBattleForm::__IncarcaINI() {
 	//#   0: don't show hexes
 	//#   1: show hexes
 	std::string str_show_hexes = ini.get("battle").get("show_hexes");
-	ShowHexes = std::stoi (str_show_hexes,&sz);
+	game.ShowHexes = std::stoi (str_show_hexes,&sz);
 
 	//# Opponent type (right side player can be either human of CPU controlled; left side player is always HUMAN controlled)
 	//# values
@@ -382,12 +382,12 @@ void TBattleForm::_InitializariSunete()
 void TBattleForm::_PuneUnitate(TCanvas *UnCanvas,int x,int y)
 {int tjuc,tlot,kappa=1;
  if(selected[x][y])
-  {if(selected[x][y]==1) if(ShowHexes) _DesenHex(UnCanvas,x,y,2);kappa=0;
+  {if(selected[x][y]==1) if(game.ShowHexes) _DesenHex(UnCanvas,x,y,2);kappa=0;
    if(selected[x][y]==2) _DesenHex(UnCanvas,x,y,3);kappa=0;
   }
  if(teren[x][y] && SelectedPlayer==teren[x][y]/20 && SelectedSlot==teren[x][y]%10)
    {_DesenHex(UnCanvas,x,y,1);kappa=0;}
- if(kappa) if(ShowHexes) _DesenHex(UnCanvas,x,y,0);
+ if(kappa) if(game.ShowHexes) _DesenHex(UnCanvas,x,y,0);
  if(teren[x][y]!=0)
      {tjuc=teren[x][y]/20;
 	  tlot=teren[x][y]%10;
@@ -538,7 +538,7 @@ void TBattleForm::DesenHexCopy(int x, int y, int fel)
 inline void TBattleForm::DesenHexuriSelectate()
 {for(int j=0;j<7;j++)
   for(int i=0;i<9;i++)
-   {if(selected[i][j]==1) if(ShowHexes) DesenHexCopy(i,j,2);
+   {if(selected[i][j]==1) if(game.ShowHexes) DesenHexCopy(i,j,2);
     if(selected[i][j]==2)DesenHexCopy(i,j,3);
    }
 }
@@ -738,7 +738,7 @@ void TBattleForm::IntraInJoc() {
 
 	FazaJoc = 1;
 	_DesenFundal();
-	if (ShowHexes){
+	if (game.ShowHexes){
 		_DesenHexuri();
 	}
 
@@ -783,7 +783,7 @@ void TBattleForm::Joc()
  WaitingForOrder=true;
 // _DesenFundal();
  CanvasFundal->Draw(10,10,ImagineTeren->Picture->Bitmap);
- if(ShowHexes)_DesenHexuri();
+ if(game.ShowHexes)_DesenHexuri();
  _InitializariMatrice();
  _InitializariMatriceS();
  _DesenUnitati();
@@ -989,7 +989,7 @@ inline void TBattleForm::Selecteaza(int x,int y,bool ShowPlayer,int felhex)
  if(ExistaHex(x,y,DRPSUS))
    {int ax=GetX(x,y,DRPSUS);int ay=GetY(x,y,DRPSUS);_PuneUnitate(CanvasFundal,ax,ay);}
 //desen hex
- if(ShowHexes || felhex==1 || felhex==3 || felhex==4)
+ if(game.ShowHexes || felhex==1 || felhex==3 || felhex==4)
    _DesenHex(CanvasFundal,x,y,felhex);
  if(!ShowPlayer && teren[x][y])
    {//_DesenHex(CanvasFundal,x,y,4);
@@ -1041,7 +1041,7 @@ inline void TBattleForm::SelecteazaUrmator()
    if(Player[exJuc]->control==HUMAN)
     {//_DesenFundal();
 	 CanvasFundal->Draw(10,10,ImagineTeren->Picture->Bitmap);
-     if(ShowHexes)_DesenHexuri();
+	 if(game.ShowHexes)_DesenHexuri();
      else CanvasLucru->CopyRect(battleRect,CanvasFundal,battleRect);
      _DesenUnitati();
     Canvas->CopyRect(battleRect,CanvasLucru,battleRect);

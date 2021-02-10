@@ -7,7 +7,8 @@ class Game{
 	Game();
 	~Game();
 
-  std::string left_player_cfg_file;
-  std::string right_player_cfg_file;
+  	std::string left_player_cfg_file;
+	std::string right_player_cfg_file;
+	bool ShowHexes;
 
 };

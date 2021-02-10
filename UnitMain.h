@@ -81,7 +81,6 @@ public:		// User declarations
         Game game;
 
 		bool PathwasFound;
-		bool ShowHexes;
 		bool WaitingForOrder;
 
 		int control2;//juc 2 e comp;
