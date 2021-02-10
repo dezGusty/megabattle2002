@@ -82,7 +82,6 @@ public:		// User declarations
 		bool PathwasFound;
 		bool WaitingForOrder;
 
-		int FazaJoc;
 		int selected[9][7];//matr selectarilor
 		int teren[9][7];//matricea sistem
 		int SelectedPlayer;

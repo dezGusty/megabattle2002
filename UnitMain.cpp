@@ -14,7 +14,6 @@
 
 // Other includes in this project.
 #include "src/terrain_type.h"
-#include "src/thirdparty/mini/ini.h"
 
 #include "UnitMain.h"
 #include "UnitMesaj.h"
@@ -42,111 +41,131 @@ void __fastcall TBattleForm::FormClose(TObject *Sender,
  DeleteDC(backgrounddc);
  DeleteDC(workdc);
 }
+
 //---------------------------------------------------------------------------
-void __fastcall TBattleForm::FormCreate(TObject *Sender)
-{Width=800;
- Height=600;
- Left=0;
- Top=0;
- FazaJoc=0;
- MouseSelectX=-84;
- MouseSelectY=-84;
- randomize();
- _InitializariSunete();
- _InitializariFundal();
+void __fastcall TBattleForm::FormCreate(TObject *Sender) {
+	Width = 800;
+	Height = 600;
+	Left = 0;
+	Top = 0;
+	game.FazaJoc = 0;
+	MouseSelectX = -84;
+	MouseSelectY = -84;
+	randomize();
+	_InitializariSunete();
+	_InitializariFundal();
 }
+
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormKeyDown(TObject *Sender, WORD &Key,
-      TShiftState Shift)
-{if(FazaJoc==0)
-   IntraInJoc();
- else
-   {
-   }
+	TShiftState Shift) {
+	if (game.FazaJoc == 0)
+		IntraInJoc();
+	else {
+		// ignore
+	}
 }
+
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
-      TShiftState Shift, int X, int Y)
-{if(FazaJoc==0)
-   IntraInJoc();
- else
-  if(WaitingForOrder)
-    {if(Button==mbLeft)
-     {if(X>20 && X<780 && Y>110 && Y<530 && Cursor!=TCursor(3))
-        {if(Cursor==TCursor(1))//mutare
-           if(ExistaCoord(X,Y))
-              Muta(GetPosX(X,Y),GetPosY(X,Y));
-         if(Cursor==TCursor(2))//atac
-           if(ExistaCoord(X,Y))
-             if(Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo>0)
-               AtacArcas(GetPosX(X,Y),GetPosY(X,Y));
-             else AtacNormal(GetPosX(X,Y),GetPosY(X,Y));
-        }
-      //butoane logice
-      for(int i=0;i<=1;i++)
-       if(button[i]->Phase==1)
-        {button[i]->Phase=2;
-         button[i]->Draw(ImagButon,CanvasLucru);
-         Canvas->CopyRect(button[i]->GetRect(),CanvasLucru,button[i]->GetRect());
-        }
-     }
-     if(Button==mbRight)
-       {if(X>20 && X<780 && Y>110 && Y<530)
-           if(ExistaCoord(X,Y))
-            {int ax=GetPosX(X,Y);
-             int ay=GetPosY(X,Y);
-             if(teren[ax][ay])
-              {int tjuc=teren[ax][ay]/20;
-               int tlot=teren[ax][ay]%10;
-               TMesaj *UnMesaj=new TMesaj(this,tjuc,tlot);
-               UnMesaj->ShowModal();
-               delete UnMesaj;
-              }
-            }
-       }
-  }
+	TShiftState Shift, int X, int Y) {
+	if (game.FazaJoc == 0) {
+		IntraInJoc();
+	}
+	else if (WaitingForOrder) {
+		if (Button == mbLeft) {
+			if (X > 20 && X < 780 && Y > 110 && Y < 530 && Cursor != TCursor(3))
+			{
+				if (Cursor == TCursor(1)) // mutare
+					if (ExistaCoord(X, Y))
+						Muta(GetPosX(X, Y), GetPosY(X, Y));
+				if (Cursor == TCursor(2)) // atac
+					if (ExistaCoord(X, Y))
+						if (Player[SelectedPlayer]->army_slots[SelectedSlot]
+							->Ranged && Player[SelectedPlayer]->army_slots
+							[SelectedSlot]->Ammo > 0)
+							AtacArcas(GetPosX(X, Y), GetPosY(X, Y));
+						else
+							AtacNormal(GetPosX(X, Y), GetPosY(X, Y));
+			}
+			// butoane logice
+			for (int i = 0; i <= 1; i++)
+				if (button[i]->Phase == 1) {
+					button[i]->Phase = 2;
+					button[i]->Draw(ImagButon, CanvasLucru);
+					Canvas->CopyRect(button[i]->GetRect(), CanvasLucru,
+						button[i]->GetRect());
+				}
+		}
+		if (Button == mbRight) {
+			if (X > 20 && X < 780 && Y > 110 && Y < 530)
+				if (ExistaCoord(X, Y)) {
+					int ax = GetPosX(X, Y);
+					int ay = GetPosY(X, Y);
+					if (teren[ax][ay]) {
+						int tjuc = teren[ax][ay] / 20;
+						int tlot = teren[ax][ay] % 10;
+						TMesaj *UnMesaj = new TMesaj(this, tjuc, tlot);
+						UnMesaj->ShowModal();
+						delete UnMesaj;
+					}
+				}
+		}
+	}
 }
+
 //---------------------------------------------------------------------------
-void __fastcall TBattleForm::FormMouseMove(TObject *Sender,
-	  TShiftState Shift, int X, int Y)
-{if(WaitingForOrder)
-  {MouseX=X;
-   MouseY=Y;
-   if(ExistaCoord(MouseX,MouseY))
-     {int fx=GetPosX(MouseX,MouseY);
-      int fy=GetPosY(MouseX,MouseY);
-      switch(selected[fx][fy])
-       {case 1:if(MouseSelectX!=fx ||MouseSelectY!=fy)
-                 {if(MouseSelectX!=-84)
-                      DesenHexCopy(MouseSelectX,MouseSelectY,2);
-                  MouseSelectX=fx;MouseSelectY=fy;
-                  _DesenHex(Canvas,MouseSelectX,MouseSelectY,4);
-                  Cursor = TCursor(1);
-                 }break;
-        case 2:{Cursor = TCursor(2);
-                if(MouseSelectX!=-84)
-                      DesenHexCopy(MouseSelectX,MouseSelectY,2);
-                MouseSelectX=-84;
-               }break;
-        case 0:_CursoareSet0();break;
-       }
-     }
-   else _CursoareSet0();
-   //butoane logice
-   if(FazaJoc==1)
-     for(int i=0;i<=1;i++)
-       if(X>button[i]->Left && X<button[i]->Right && Y>button[i]->Top && Y<button[i]->Bottom)
-          {if(button[i]->Phase==0)
-             {button[i]->Phase=1;
-              button[i]->Draw(ImagButon,CanvasLucru);
-              Canvas->CopyRect(button[i]->GetRect(),CanvasLucru,button[i]->GetRect());
-             }
-          }
-       else if(button[i]->Phase==1)
-             {button[i]->Phase=0;
-              button[i]->Draw(ImagButon,Canvas);
-             }
-  }
+void __fastcall TBattleForm::FormMouseMove(TObject *Sender, TShiftState Shift,
+	int X, int Y) {
+	if (WaitingForOrder) {
+		MouseX = X;
+		MouseY = Y;
+		if (ExistaCoord(MouseX, MouseY)) {
+			int fx = GetPosX(MouseX, MouseY);
+			int fy = GetPosY(MouseX, MouseY);
+			switch (selected[fx][fy]) {
+			case 1:
+				if (MouseSelectX != fx || MouseSelectY != fy) {
+					if (MouseSelectX != -84)
+						DesenHexCopy(MouseSelectX, MouseSelectY, 2);
+					MouseSelectX = fx;
+					MouseSelectY = fy;
+					_DesenHex(Canvas, MouseSelectX, MouseSelectY, 4);
+					Cursor = TCursor(1);
+				}
+				break;
+			case 2: {
+					Cursor = TCursor(2);
+					if (MouseSelectX != -84)
+						DesenHexCopy(MouseSelectX, MouseSelectY, 2);
+					MouseSelectX = -84;
+				} break;
+			case 0:
+				_CursoareSet0();
+				break;
+			}
+		}
+		else
+			_CursoareSet0();
+
+		// butoane logice
+		if (game.FazaJoc == 1) {
+			for (int i = 0; i <= 1; i++)
+				if (X > button[i]->Left && X < button[i]->Right && Y >
+					button[i]->Top && Y < button[i]->Bottom) {
+					if (button[i]->Phase == 0) {
+						button[i]->Phase = 1;
+						button[i]->Draw(ImagButon, CanvasLucru);
+						Canvas->CopyRect(button[i]->GetRect(), CanvasLucru,
+							button[i]->GetRect());
+					}
+				}
+				else if (button[i]->Phase == 1) {
+					button[i]->Phase = 0;
+					button[i]->Draw(ImagButon, Canvas);
+				}
+		}
+	}
 }
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormMouseUp(TObject *Sender,
@@ -689,7 +708,7 @@ void TBattleForm::IntraInJoc() {
 
 	LoadBattleBackgroundPictureForType(game.felteren);
 
-	FazaJoc = 1;
+	game.FazaJoc = 1;
 	_DesenFundal();
 	if (game.ShowHexes){
 		_DesenHexuri();

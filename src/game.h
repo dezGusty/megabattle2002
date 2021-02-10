@@ -19,5 +19,6 @@ class Game{
 	TerrainType felteren;
 
 	bool LoadBattleIniFile();
+	int FazaJoc;
 
 };
