@@ -2,11 +2,59 @@
 #include <vcl.h>
 #pragma hdrstop
 
+#include <algorithm>
+#include <string>
+#include <sstream>
+
+#include "src/thirdparty/mini/ini.h"
+#include "src/terrain_type.h"
+
 #include "LauncherMainUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 TForm1 *Form1;
+
+bool SaveBattleIniFile(std::string ini_file_name, bool show_hexes, bool cpu_control, int terrain_type,
+	std::string fisier1, std::string fisier2) {
+	// first, create a file instance
+	mINI::INIFile file(ini_file_name);
+
+	// next, create a structure that will hold data
+	mINI::INIStructure ini;
+
+	std::stringstream ss;
+	ss.str(std::string());
+
+	ss << terrain_type;
+	std::string value_terrain_type = ss.str();
+	ini["battle"]["terrain"] = value_terrain_type;
+	ss.str(std::string());
+
+	ss << static_cast<int>(show_hexes);
+	std::string value_show_hexes = ss.str();
+	ini["battle"]["show_hexes"] = value_show_hexes;
+	ss.str(std::string());
+
+	ss << static_cast<int>(cpu_control);
+    std::string value_cpu_control = ss.str();
+	ini["battle"]["right_player_control"] = value_cpu_control;
+	ss.str(std::string());
+
+	ini["battle"]["left_side_player_config"] = fisier1;
+
+	ini["battle"]["right_side_player_config"] = fisier2;
+
+	file.write(ini, true);
+	return true;
+}
+
+bool __exista(const char *filename){
+	return (access(filename, 0) == 0);
+}
+
+
+
 //---------------------------------------------------------------------------
 __fastcall TForm1::TForm1(TComponent* Owner)
         : TForm(Owner)
@@ -19,10 +67,11 @@ void __fastcall TForm1::ButtonCloseClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TForm1::ButtonLaunchClick(TObject *Sender)
-{SetCurrentDir(DirectorJoc);
- execl("MegaBattle2.exe","MegaBattle2.exe",NULL);
+void __fastcall TForm1::ButtonLaunchClick(TObject *Sender) {
+	SetCurrentDir(InitialGameDir);
+	execl("MegaBattle2.exe", "MegaBattle2.exe", NULL);
 }
+
 //---------------------------------------------------------------------------
 void __fastcall TForm1::Timer1Timer(TObject *Sender)
 {//aici lucru
@@ -40,128 +89,211 @@ void __fastcall TForm1::Timer1Timer(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+bool TForm1::LoadIniFile(const std::string& file_name) {
 
-void __fastcall TForm1::FormActivate(TObject *Sender)
-{TRect tmp(0,0,100,75);
- cpRect=tmp;
- Timer1->Enabled=true;
- if(__exista("battle.ini"))
-  {FILE *f=fopen("battle.ini","rb");
-   felteren=1;ShowHexes=1;
-   __citeste(f);
-   fscanf(f,"%d",&ShowHexes);
-   __citeste(f);
-   fscanf(f,"%d",&control2);
-   __citeste(f);
-   fscanf(f,"%d",&felteren);
-   __citeste(f);
-   fscanf(f,"%s",fisier1);
-   __citeste(f);
-   fscanf(f,"%s",fisier2);
-   NumeErou1->Caption=fisier1;
-   NumeErou2->Caption=fisier2;
-   fclose(f);
-  }
- else
-   {MessageDlg("The file <Battle.ini> does not exist in \n\the current directory", mtInformation, TMsgDlgButtons() << mbOK, 0);
-    Close();}
- OpenDialog1->InitialDir=GetCurrentDir();
- DirectorJoc=GetCurrentDir();
- CheckBox1->Checked=control2;
- CheckBox2->Checked=ShowHexes;
- Edit1->Text=felteren;
+	// first, create a file instance
+	mINI::INIFile file(file_name);
+
+	// next, create a structure that will hold data
+	mINI::INIStructure ini;
+
+	// now we can read the file
+	file.read(ini);
+
+	std::string::size_type sz;
+
+	// Load the settings
+
+	// # Only for esthetics for now
+	// # Terrain type impacts the picture drawn for the background
+	// # values
+	// #   1: Grass
+	// #   2: Dirt
+	std::string str_terrain_type = ini.get("battle").get("terrain");
+	int num_terrain_type = 1;
+	try{
+		if (str_terrain_type.length() > 0) {
+			num_terrain_type = std::stoi(str_terrain_type, &sz);
+		}
+	}
+	catch(...) {
+		// ignore?
+    }
+	felteren = num_terrain_type;
+
+	// # Shows or hides the hexes
+	// # values
+	// #   0: don't show hexes
+	// #   1: show hexes
+	std::string str_show_hexes = ini.get("battle").get("show_hexes");
+	ShowHexes = 1;
+	try {
+		if (str_show_hexes.length() > 0){
+			ShowHexes = std::stoi(str_show_hexes, &sz);
+		}
+	} catch (...) {
+		// ignore?
+	}
+
+	// # Opponent type (right side player can be either human of CPU controlled; left side player is always HUMAN controlled)
+	// # values
+	// #   0: HUMAN
+	// #   1: CPU
+	std::string str_control2 = ini.get("battle").get("right_player_control");
+	control2 = 1;
+	try{
+		if (str_control2.length() > 0) {
+			control2 = std::stoi(str_control2, &sz);
+		}
+	} catch (...) {
+        // ignore?
+    }
+
+	// # Config file for left side hero and army
+	fisier1 = "";
+	try {
+		fisier1 = ini.get("battle").get("left_side_player_config");
+	} catch (...) {
+		// ignore
+	}
+
+	NumeErou1->Caption = fisier1.c_str();
+
+	// # Config file for right side hero and army
+	fisier2 = "";
+	try{
+		fisier2 = ini.get("battle").get("right_side_player_config");
+	} catch (...) {
+        // ignore
+	}
+
+	NumeErou2->Caption = fisier2.c_str();
+	return true;
+}
+
+void __fastcall TForm1::FormActivate(TObject *Sender) {
+	TRect tmp(0, 0, 100, 75);
+	cpRect = tmp;
+	Timer1->Enabled = true;
+	if (__exista("battle.ini")) {
+		LoadIniFile("battle.ini");
+	}
+
+	else {
+		MessageDlg(
+			"The file <Battle.ini> does not exist in \n\the current directory",
+			mtInformation, TMsgDlgButtons() << mbOK, 0);
+		Close();
+	}
+	OpenDialog1->InitialDir = GetCurrentDir();
+	InitialGameDir = GetCurrentDir();
+	CheckBox1->Checked = control2;
+	CheckBox2->Checked = ShowHexes;
+	Edit1->Text = felteren;
+}
+
+//---------------------------------------------------------------------------
+void TForm1::ScrieINI() {
+	bool player_2_cpu_control = CheckBox1->Checked;
+	bool show_map_hexes = CheckBox2->Checked;
+	AnsiString text_value = Edit1->Text.c_str();
+	std::string str_terrain_type = text_value.c_str();
+
+	std::string::size_type sz;
+	int num_terrain_type = std::stoi(str_terrain_type, &sz);
+
+	SaveBattleIniFile("battle.ini", show_map_hexes, player_2_cpu_control,
+		num_terrain_type, fisier1, fisier2);
+}
+
+/**
+	Bring the file path to a standard format.
+	This tries to strip the base directory if provided.
+*/
+std::string normalize_file_name(const std::string& input, const std::string& base_dir_to_strip){
+
+	std::string result(input);
+
+	// Make the path relative to the current directory (kind of).
+	// Strip the first part of the input if it matches.
+	// E.g. "C:\games\megabattle\heroes\hero1.dta" with "C:\games\megabattle"
+	//  => "\heroes\hero1.dta"
+	if (input.rfind(base_dir_to_strip, 0) == 0) {
+		// input begins with base_dir_to_strip
+		result = result.substr(base_dir_to_strip.length());
+
+		// Check if the remaining string begins with a backslash
+		// E.g. "\heroes\hero1.dta" => "heroes\hero1.dta"
+		if (result.length() > 0 && *result.begin() == '\\') {
+			result = result.substr(1);
+		}
+	}
+
+	// replace all occurrences of backslash with forward slash
+	// E.g. "C:\games\megabattle\heroes\hero1.dta" => "C:/games/megabattle/heroes/hero1.dta"
+	// or   "heroes\hero1.dta" => "heroes/hero1.dta"
+	std::replace(result.begin(), result.end(), '\\', '/');
+
+	return result;
+}
+
+void __fastcall TForm1::NumeErou1Click(TObject *Sender) {
+	OpenDialog1->InitialDir = InitialGameDir + "\\heroes";
+
+	if (OpenDialog1->Execute()) {
+		AnsiString ansi_file_name = OpenDialog1->FileName.c_str();
+		std::string my_file_name = normalize_file_name(ansi_file_name.c_str(), InitialGameDir.c_str());
+
+		fisier1 = my_file_name;
+		NumeErou1->Caption = fisier1.c_str();
+		ScrieINI();
+	}
 }
 //---------------------------------------------------------------------------
-void TForm1::ScrieINI()
-{control2=CheckBox1->Checked;
- ShowHexes=CheckBox2->Checked;
- felteren=atoi(Edit1->Text.c_str());
-
- SetCurrentDir(DirectorJoc);
- FILE *f=fopen("battle.ini","w");
- fprintf(f,"-------------Show hexes---");
- fprintf(f,"\n^%d\n",ShowHexes);
- fprintf(f,"--Inamicul este computer--");
- fprintf(f,"\n^%d\n",control2);
- fprintf(f,"--------Felul terenului---");
- fprintf(f,"\n^%d\n",felteren);
- fprintf(f,"----------------Player1---");
- fprintf(f,"\n^%s\n",fisier1);
- fprintf(f,"----------------Player2---");
- fprintf(f,"\n^%s\n",fisier2);
- fclose(f);
-}
-
-void __fastcall TForm1::NumeErou1Click(TObject *Sender)
-{OpenDialog1->InitialDir=DirectorJoc+"\\heroes";
- if (OpenDialog1->Execute())
-  {char buf[255]="\0";
-   char invers[255]="\0";
-   strcpy(buf,OpenDialog1->FileName.c_str());
-   int k=strlen(buf);
-   int kappa=strlen(buf);
-   int slashuri=0;
-   do
-     {invers[kappa-k]=buf[k-1];
-      if(slashuri>=2) invers[kappa-k]='\0';
-      k--;
-      if(buf[k]=='\\') slashuri++;
-     }
-   while (k>=0);
-   strcpy(buf,"\0");for(int i=0;i<=255;i++) buf[i]='\0';
-   kappa=strlen(invers);
-   for(int i=0;i<=kappa-2;i++) buf[i]=invers[kappa-2-i];
-//trebuie insa dublu \\backslash\\
-   kappa=strlen(buf);
-   for(int i=kappa-1;i>=0;i--)
-     {buf[i+1]=buf[i];if(buf[i]=='\\') i=-1;}
-   strcpy(fisier1,buf);
-   NumeErou1->Caption=fisier1;
-   ScrieINI();
-//   MessageDlg("ok",mtInformation,TMsgDlgButtons() << mbOK,0);
-  }
-}
-//---------------------------------------------------------------------------
 
 
-void __fastcall TForm1::NumeErou2Click(TObject *Sender)
-{if (OpenDialog1->Execute())
-  {char buf[255]="\0";
-   char invers[255]="\0";
-   strcpy(buf,OpenDialog1->FileName.c_str());
-   int k=strlen(buf);
-   int kappa=strlen(buf);
-   int slashuri=0;
-   do
-     {invers[kappa-k]=buf[k-1];
-      if(slashuri>=2) invers[kappa-k]='\0';
-      k--;
-      if(buf[k]=='\\') slashuri++;
-     }
-   while (k>=0);
-   strcpy(buf,"\0");for(int i=0;i<=255;i++) buf[i]='\0';
-   kappa=strlen(invers);
-   for(int i=0;i<=kappa-2;i++) buf[i]=invers[kappa-2-i];
-//trebuie insa dublu \\backslash\\
-   kappa=strlen(buf);
-   for(int i=kappa-1;i>=0;i--)
-     {buf[i+1]=buf[i];if(buf[i]=='\\') i=-1;}
-   strcpy(fisier2,buf);
-   NumeErou2->Caption=fisier2;
-   ScrieINI();
-  }
+void __fastcall TForm1::NumeErou2Click(TObject *Sender) {
+	OpenDialog1->InitialDir = InitialGameDir + "\\heroes";
+
+	if (OpenDialog1->Execute()) {
+		AnsiString ansi_file_name = OpenDialog1->FileName.c_str();
+		std::string my_file_name = normalize_file_name(ansi_file_name.c_str(), InitialGameDir.c_str());
+
+		fisier2 = my_file_name;
+		NumeErou2->Caption = fisier2.c_str();
+		ScrieINI();
+	}
 }
 //---------------------------------------------------------------------------
 
 
 void __fastcall TForm1::FormDestroy(TObject *Sender)
-{ScrieINI();
+{
+//	ScrieINI();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TForm1::Edit1Change(TObject *Sender)
-{int valoare=atoi(Edit1->Text.c_str());
- if(valoare<1 || valoare>2) Edit1->Text=1;
+void __fastcall TForm1::Edit1Change(TObject *Sender) {
+	AnsiString text_value = Edit1->Text.c_str();
+	std::string str_terrain_type(text_value.c_str());
+	std::string::size_type sz;
+	int num_terrain_type = std::stoi(str_terrain_type, &sz);
+
+	if (num_terrain_type < 1 || num_terrain_type > 2) {
+		Edit1->Text = 1;
+	}
+
+    ScrieINI();
+}
+// ---------------------------------------------------------------------------
+void __fastcall TForm1::CheckBox2Click(TObject *Sender)
+{
+	ScrieINI();
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TForm1::CheckBox1Click(TObject *Sender)
+{
+	ScrieINI();
+}
+//---------------------------------------------------------------------------

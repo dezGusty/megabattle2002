@@ -39,19 +39,22 @@ __published:	// IDE-managed Components
         void __fastcall NumeErou2Click(TObject *Sender);
         void __fastcall FormDestroy(TObject *Sender);
         void __fastcall Edit1Change(TObject *Sender);
+	void __fastcall CheckBox2Click(TObject *Sender);
+	void __fastcall CheckBox1Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
         TRect cpRect;
         int felteren;
         int ShowHexes;
         int control2;
-        char fisier1[50];
-        char fisier2[50];
-        AnsiString DirectorJoc;
+		std::string fisier1;
+        std::string fisier2;
+        AnsiString InitialGameDir;
         __fastcall TForm1(TComponent* Owner);
         void __citeste(FILE *ff){char c;do{fscanf(ff,"%c",&c);}while(c!='^' && !feof(ff));}
-        bool __exista(char *filename){return (access(filename, 0) == 0);}
-        void ScrieINI();
+
+		void ScrieINI();
+        bool LoadIniFile(const std::string& file_name);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TForm1 *Form1;

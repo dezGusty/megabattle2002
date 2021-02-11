@@ -9,6 +9,9 @@
         <Projects Include="MegaBattle2.cbproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="Launcher2.cbproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -35,14 +38,23 @@
     <Target Name="MegaBattle2:Make">
         <MSBuild Projects="MegaBattle2.cbproj" Targets="Make"/>
     </Target>
+    <Target Name="Launcher2">
+        <MSBuild Projects="Launcher2.cbproj"/>
+    </Target>
+    <Target Name="Launcher2:Clean">
+        <MSBuild Projects="Launcher2.cbproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Launcher2:Make">
+        <MSBuild Projects="Launcher2.cbproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="HeroEdit;MegaBattle2"/>
+        <CallTarget Targets="HeroEdit;MegaBattle2;Launcher2"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="HeroEdit:Clean;MegaBattle2:Clean"/>
+        <CallTarget Targets="HeroEdit:Clean;MegaBattle2:Clean;Launcher2:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="HeroEdit:Make;MegaBattle2:Make"/>
+        <CallTarget Targets="HeroEdit:Make;MegaBattle2:Make;Launcher2:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

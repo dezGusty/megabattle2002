@@ -20,5 +20,6 @@ class Game{
 
 	bool LoadBattleIniFile();
 	int FazaJoc;
+	bool WaitingForOrder;
 
 };

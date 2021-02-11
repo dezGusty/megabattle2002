@@ -69,7 +69,6 @@ __published:	// IDE-managed Components
 		void __fastcall Surrender1Click(TObject *Sender);
 private:	// User declarations
 		LPDIRECTDRAW            lpDD;           // DirectDraw object
-		bool bActive;
 		void __fastcall DDrawStart();
 		HDC backgrounddc;
 		HBITMAP  bkbmp;
@@ -80,7 +79,6 @@ public:		// User declarations
         Game game;
 
 		bool PathwasFound;
-		bool WaitingForOrder;
 
 		int selected[9][7];//matr selectarilor
 		int teren[9][7];//matricea sistem
@@ -106,7 +104,6 @@ public:		// User declarations
 		bool __ExistaPlayer(int juc,int lot){bool ret=true;if(juc>1 ||lot>Player[juc]->angajati) ret=false;return ret;}
 		void _CursoareInitializari();
 		void _CursoareSet0();
-		void _DesenFundal();
 		void _DesenHex(TCanvas *UnCanvas, int x, int y, int fel);
 		void _DesenHexuri();
 		void _DesenUnitati();
@@ -141,6 +138,7 @@ public:		// User declarations
 		void PathFinding(int x,int y,int mut,int pas);
 
 		void PlaySoundForAction(SimpleSoundAction action);
+		void RenderBorderAndBackground();
 
 		void SeteazaHex(int x,int y,int mut);
 		void SeteazaHex2(int x,int y,int mut,int exdir);

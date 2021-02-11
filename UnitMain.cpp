@@ -25,21 +25,21 @@ TBattleForm *BattleForm;
 __fastcall TBattleForm::TBattleForm(TComponent* Owner)
         : TForm(Owner)
 {lpDD = NULL;
- bActive=0;
 }
+
 //---------------------------------------------------------------------------
-void __fastcall TBattleForm::FormActivate(TObject *Sender)
-{DDrawStart();
+void __fastcall TBattleForm::FormActivate(TObject *Sender) {
+	DDrawStart();
 }
+
 //---------------------------------------------------------------------------
-void __fastcall TBattleForm::FormClose(TObject *Sender,
-      TCloseAction &Action)
-{SelectObject(backgrounddc, bkbmp);
- DeleteObject(bkbmp);
- SelectObject(workdc, wkbmp);
- DeleteObject(wkbmp);
- DeleteDC(backgrounddc);
- DeleteDC(workdc);
+void __fastcall TBattleForm::FormClose(TObject *Sender, TCloseAction &Action) {
+	SelectObject(backgrounddc, bkbmp);
+	DeleteObject(bkbmp);
+	SelectObject(workdc, wkbmp);
+	DeleteObject(wkbmp);
+	DeleteDC(backgrounddc);
+	DeleteDC(workdc);
 }
 
 //---------------------------------------------------------------------------
@@ -72,7 +72,7 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 	if (game.FazaJoc == 0) {
 		IntraInJoc();
 	}
-	else if (WaitingForOrder) {
+	else if (game.WaitingForOrder) {
 		if (Button == mbLeft) {
 			if (X > 20 && X < 780 && Y > 110 && Y < 530 && Cursor != TCursor(3))
 			{
@@ -117,7 +117,7 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormMouseMove(TObject *Sender, TShiftState Shift,
 	int X, int Y) {
-	if (WaitingForOrder) {
+	if (game.WaitingForOrder) {
 		MouseX = X;
 		MouseY = Y;
 		if (ExistaCoord(MouseX, MouseY)) {
@@ -167,20 +167,23 @@ void __fastcall TBattleForm::FormMouseMove(TObject *Sender, TShiftState Shift,
 		}
 	}
 }
+
 //---------------------------------------------------------------------------
-void __fastcall TBattleForm::FormMouseUp(TObject *Sender,
-      TMouseButton Button, TShiftState Shift, int X, int Y)
-{if(WaitingForOrder)
-  {//butoane logice
-   if(button[1]->Phase==2) OrdinSkipTurn();
-   if(button[0]->Phase==2) PopupMenu1->Popup(40,560); //Close();
-   for(int i=0;i<=1;i++)
-    if(button[i]->Phase==2)
-      {button[i]->Phase=0;
-       button[i]->Draw(ImagButon,CanvasLucru);
-       Canvas->CopyRect(button[i]->GetRect(),CanvasLucru,button[i]->GetRect());
-      }
-  }
+void __fastcall TBattleForm::FormMouseUp(TObject *Sender, TMouseButton Button,
+	TShiftState Shift, int X, int Y) {
+	if (game.WaitingForOrder) { // butoane logice
+		if (button[1]->Phase == 2)
+			OrdinSkipTurn();
+		if (button[0]->Phase == 2)
+			PopupMenu1->Popup(40, 560); // Close();
+		for (int i = 0; i <= 1; i++)
+			if (button[i]->Phase == 2) {
+				button[i]->Phase = 0;
+				button[i]->Draw(ImagButon, CanvasLucru);
+				Canvas->CopyRect(button[i]->GetRect(), CanvasLucru,
+					button[i]->GetRect());
+			}
+	}
 }
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormPaint(TObject *Sender)
@@ -205,7 +208,7 @@ void __fastcall TBattleForm::DDrawStart()
     if(ddrval == DD_OK)
     { ddrval = lpDD->SetDisplayMode(800, 600, 16);
       if(ddrval == DD_OK)
-      {     bActive = True;
+	  {     bActive = True;
             return;
       }
     }
@@ -262,7 +265,7 @@ void TBattleForm::LoadBattleBackgroundPictureForType(TerrainType terrain_type) {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void TBattleForm::_DesenFundal()
+void TBattleForm::RenderBorderAndBackground()
 {int i;
  ImagBorder->Draw(CanvasFundal,0,0,0,true);
  ImagBorder->Draw(CanvasFundal,0,540,0,true);
@@ -709,7 +712,7 @@ void TBattleForm::IntraInJoc() {
 	LoadBattleBackgroundPictureForType(game.felteren);
 
 	game.FazaJoc = 1;
-	_DesenFundal();
+	RenderBorderAndBackground();
 	if (game.ShowHexes){
 		_DesenHexuri();
 	}
@@ -748,44 +751,48 @@ void TBattleForm::IntraInJoc() {
 	Joc();
 }
 
-//---------------------------------------------------------------------------
-void TBattleForm::Joc()
-{SelectedPlayer=0;
- SelectedSlot=0;
- WaitingForOrder=true;
-// _DesenFundal();
- CanvasFundal->Draw(10,10,ImagineTeren->Picture->Bitmap);
- if(game.ShowHexes)_DesenHexuri();
- _InitializariMatrice();
- _InitializariMatriceS();
- _DesenUnitati();
- Canvas->CopyRect(allRect,CanvasLucru,allRect);
- int mt=Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
- SeteazaHex(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y,mt);
- if(Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo>0)
-   SeteazaHexArcas(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y);
- DesenHexuriSelectate();
- Selecteaza(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y,1,1);
- button[0]=new TLogicButton;
- button[0]->Left=0;
- button[0]->Top=550;
- button[0]->Width=50;
- button[0]->Height=50;
- button[0]->VisibleIndex=0;
- button[0]->SelectedIndex=1;
- button[0]->PressedIndex=2;
- button[0]->Phase=0;
- button[0]->Draw(ImagButon,Canvas);
- button[1]=new TLogicButton;
- button[1]->Left=750;
- button[1]->Top=550;
- button[1]->Width=50;
- button[1]->Height=50;
- button[1]->VisibleIndex=3;
- button[1]->SelectedIndex=4;
- button[1]->PressedIndex=5;
- button[1]->Phase=0;
- button[1]->Draw(ImagButon,Canvas);
+// ---------------------------------------------------------------------------
+void TBattleForm::Joc() {
+	SelectedPlayer = 0;
+	SelectedSlot = 0;
+	game.WaitingForOrder = true;
+	CanvasFundal->Draw(10, 10, ImagineTeren->Picture->Bitmap);
+	if (game.ShowHexes)
+		_DesenHexuri();
+	_InitializariMatrice();
+	_InitializariMatriceS();
+	_DesenUnitati();
+	Canvas->CopyRect(allRect, CanvasLucru, allRect);
+	int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
+	SeteazaHex(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt);
+	if (Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player
+		[SelectedPlayer]->army_slots[SelectedSlot]->Ammo > 0)
+		SeteazaHexArcas(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+		Player[SelectedPlayer]->army_slots[SelectedSlot]->y);
+	DesenHexuriSelectate();
+	Selecteaza(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, 1, 1);
+	button[0] = new TLogicButton;
+	button[0]->Left = 0;
+	button[0]->Top = 550;
+	button[0]->Width = 50;
+	button[0]->Height = 50;
+	button[0]->VisibleIndex = 0;
+	button[0]->SelectedIndex = 1;
+	button[0]->PressedIndex = 2;
+	button[0]->Phase = 0;
+	button[0]->Draw(ImagButon, Canvas);
+	button[1] = new TLogicButton;
+	button[1]->Left = 750;
+	button[1]->Top = 550;
+	button[1]->Width = 50;
+	button[1]->Height = 50;
+	button[1]->VisibleIndex = 3;
+	button[1]->SelectedIndex = 4;
+	button[1]->PressedIndex = 5;
+	button[1]->Phase = 0;
+	button[1]->Draw(ImagButon, Canvas);
 }
 //---------------------------------------------------------------------------
 inline void TBattleForm::Muta(int newx,int newy)
@@ -980,71 +987,86 @@ inline void TBattleForm::Selecteaza(int x,int y,bool ShowPlayer,int felhex)
  Canvas->CopyRect(FigRect,CanvasLucru,FigRect);
 }
 //---------------------------------------------------------------------------
-inline void TBattleForm::SelecteazaUrmator()
-{int k=Victorie();
- if(!k)
-  {int exJuc=SelectedPlayer;
-   int exSlot=SelectedSlot;
-   //setari pt. mutari
-   if(Player[SelectedPlayer]->army_slots[SelectedSlot]->alive)
-	 Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft=Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesMax;
-   //cautarea urmatorului
-   bool gasit=0;
-   do
-     {if(SelectedPlayer==0)
-        SelectedPlayer=1;
-      else//al doilea juc
-        if(SelectedSlot<Player[SelectedPlayer]->angajati)
-          {SelectedSlot++;
-           SelectedPlayer=0;
-          }
-        else {SelectedSlot=0;
-              SelectedPlayer=0;
-             }
-      if(__ExistaPlayer(SelectedPlayer,SelectedSlot))
-		if(Player[SelectedPlayer]->army_slots[SelectedSlot]->alive) gasit=1;
-     }
-   while(!gasit);
-   //setari pt retaliations
-   Player[SelectedPlayer]->army_slots[SelectedSlot]->Retal=Player[SelectedPlayer]->army_slots[SelectedSlot]->RetalNum;
-   //matricea selected e deja plina => s-o golim
-   _InitializariMatriceS();
-   //desenari de curatare a formului daca cel dinainte a fost human
-   if(Player[exJuc]->control==HUMAN)
-    {//_DesenFundal();
-	 CanvasFundal->Draw(10,10,ImagineTeren->Picture->Bitmap);
-	 if(game.ShowHexes)_DesenHexuri();
-     else CanvasLucru->CopyRect(battleRect,CanvasFundal,battleRect);
-     _DesenUnitati();
-    Canvas->CopyRect(battleRect,CanvasLucru,battleRect);
-    }
-    else
-	 Selecteaza(Player[exJuc]->army_slots[exSlot]->x,Player[exJuc]->army_slots[exSlot]->y,1,0);
-	Selecteaza(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y,1,1);
-   // desenari (in asteptarea noii comenzi) valabil doar pt control uman
-   if(Player[SelectedPlayer]->control==HUMAN)
-    {int mt=Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
-	 SeteazaHex(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y,mt);
-	 if(Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo>0)
-	   SeteazaHexArcas(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,Player[SelectedPlayer]->army_slots[SelectedSlot]->y);
-     DesenHexuriSelectate();
-     Canvas->CopyRect(battleRect,CanvasLucru,battleRect);
-     _CursoareSet0();
-    }
-   if(SelectedPlayer==1 && Player[1]->control==COMPUTER)
-     WaitingForOrder=0;
-   else WaitingForOrder=1;
-   if(!WaitingForOrder)//adica e computer
-     AITimer->Enabled=true;//adica e gata sa recpeteze ordinele
-  }
- else
-  {
-  std::string message("Battle won by ");
-  message.append(Player[k-1]->nume.c_str());
-  message.append("\nCongratulations to the winner!");
-   MessageDlg(message.c_str(), mtInformation, TMsgDlgButtons() << mbOK, 0);
-   Close();
-  }
+inline void TBattleForm::SelecteazaUrmator() {
+	int k = Victorie();
+	if (!k) {
+		int exJuc = SelectedPlayer;
+		int exSlot = SelectedSlot;
+		// setari pt. mutari
+		if (Player[SelectedPlayer]->army_slots[SelectedSlot]->alive)
+			Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft =
+				Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesMax;
+		// cautarea urmatorului
+		bool gasit = 0;
+		do {
+			if (SelectedPlayer == 0)
+				SelectedPlayer = 1;
+			else // al doilea juc
+				if (SelectedSlot < Player[SelectedPlayer]->angajati) {
+				SelectedSlot++;
+				SelectedPlayer = 0;
+			}
+			else {
+				SelectedSlot = 0;
+				SelectedPlayer = 0;
+			}
+			if (__ExistaPlayer(SelectedPlayer, SelectedSlot))
+				if (Player[SelectedPlayer]->army_slots[SelectedSlot]->alive)
+					gasit = 1;
+		}
+		while (!gasit);
+		// setari pt retaliations
+		Player[SelectedPlayer]->army_slots[SelectedSlot]->Retal =
+			Player[SelectedPlayer]->army_slots[SelectedSlot]->RetalNum;
+		// matricea selected e deja plina => s-o golim
+		_InitializariMatriceS();
+		// desenari de curatare a formului daca cel dinainte a fost human
+		if (Player[exJuc]->control == HUMAN) {
+			CanvasFundal->Draw(10, 10, ImagineTeren->Picture->Bitmap);
+			if (game.ShowHexes)
+				_DesenHexuri();
+			else
+				CanvasLucru->CopyRect(battleRect, CanvasFundal, battleRect);
+			_DesenUnitati();
+			Canvas->CopyRect(battleRect, CanvasLucru, battleRect);
+		}
+		else
+			Selecteaza(Player[exJuc]->army_slots[exSlot]->x,
+			Player[exJuc]->army_slots[exSlot]->y, 1, 0);
+		Selecteaza(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+			Player[SelectedPlayer]->army_slots[SelectedSlot]->y, 1, 1);
+		// desenari (in asteptarea noii comenzi) valabil doar pt control uman
+		if (Player[SelectedPlayer]->control == HUMAN) {
+			int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]
+				->MovesLeft;
+			SeteazaHex(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+				Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt);
+			if (Player[SelectedPlayer]->army_slots[SelectedSlot]
+				->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]
+				->Ammo > 0)
+				SeteazaHexArcas(Player[SelectedPlayer]->army_slots[SelectedSlot]
+				->x, Player[SelectedPlayer]->army_slots[SelectedSlot]->y);
+			DesenHexuriSelectate();
+			Canvas->CopyRect(battleRect, CanvasLucru, battleRect);
+			_CursoareSet0();
+		}
+		if (SelectedPlayer == 1 && Player[1]->control == COMPUTER) {
+			game.WaitingForOrder = false;
+		}
+		else {
+			game.WaitingForOrder = true;
+		}
+		if (!game.WaitingForOrder) { // adica e computer
+			AITimer->Enabled = true; // adica e gata sa recpeteze ordinele
+		}
+	}
+	else {
+		std::string message("Battle won by ");
+		message.append(Player[k - 1]->nume.c_str());
+		message.append("\nCongratulations to the winner!");
+		MessageDlg(message.c_str(), mtInformation, TMsgDlgButtons() << mbOK, 0);
+		Close();
+	}
 }
 //---------------------------------------------------------------------------
 inline void TBattleForm::SeteazaHex(int x,int y,int mut)
