@@ -4,9 +4,9 @@
 #pragma hdrstop
 #include <tchar.h>
 //---------------------------------------------------------------------------
+USEFORM("MainUnit.cpp", EditForm);
 USEFORM("HeroEdit.cpp", Form3);
 USEFORM("AboutUnit.cpp", FormHelp);
-USEFORM("MainUnit.cpp", EditForm);
 //---------------------------------------------------------------------------
 int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 {
@@ -16,7 +16,6 @@ int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 		Application->Title = "Megalithic Editor";
 
 		Application->MainFormOnTaskBar = true;
-		Application->CreateForm(__classid(TFormHelp), &FormHelp);
 		Application->CreateForm(__classid(TEditForm), &EditForm);
 		Application->Run();
 	}
