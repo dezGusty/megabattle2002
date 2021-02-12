@@ -69,7 +69,6 @@ __published:	// IDE-managed Components
 		void __fastcall Surrender1Click(TObject *Sender);
 private:	// User declarations
 		LPDIRECTDRAW            lpDD;           // DirectDraw object
-		void __fastcall DDrawStart();
 		HDC backgrounddc;
 		HBITMAP  bkbmp;
 		HDC workdc;
