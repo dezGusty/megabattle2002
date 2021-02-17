@@ -15,7 +15,7 @@
 #include <Dialogs.hpp>
 #include <ComCtrls.hpp>
 //---------------------------------------------------------------------------
-class TForm1 : public TForm
+class TLauncherForm : public TForm
 {
 __published:	// IDE-managed Components
         TButton *ButtonClose;
@@ -42,21 +42,22 @@ __published:	// IDE-managed Components
 	void __fastcall CheckBox2Click(TObject *Sender);
 	void __fastcall CheckBox1Click(TObject *Sender);
 private:	// User declarations
+        bool app_state_initialized;
 public:		// User declarations
-        TRect cpRect;
+		TRect cpRect;
         int felteren;
         int ShowHexes;
         int control2;
 		std::string fisier1;
         std::string fisier2;
         AnsiString InitialGameDir;
-        __fastcall TForm1(TComponent* Owner);
+        __fastcall TLauncherForm(TComponent* Owner);
         void __citeste(FILE *ff){char c;do{fscanf(ff,"%c",&c);}while(c!='^' && !feof(ff));}
 
 		void ScrieINI();
         bool LoadIniFile(const std::string& file_name);
 };
 //---------------------------------------------------------------------------
-extern PACKAGE TForm1 *Form1;
+extern PACKAGE TLauncherForm *LauncherForm;
 //---------------------------------------------------------------------------
 #endif

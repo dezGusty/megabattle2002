@@ -14,6 +14,7 @@
 
 // Other includes in this project.
 #include "src/terrain_type.h"
+#include "src/filehelperfunctions.h"
 
 #include "UnitMain.h"
 #include "UnitMesaj.h"
@@ -21,6 +22,7 @@
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 TBattleForm *BattleForm;
+
 
 // ---------------------------------------------------------------------------
 __fastcall TBattleForm::TBattleForm(TComponent* Owner) : TForm(Owner) {
@@ -231,12 +233,12 @@ void TBattleForm::LoadBattleBackgroundPictureForType(TerrainType terrain_type) {
 	ImagineTeren = new TImage(this);
 	switch (game.felteren) {
 	case TerrainType::GrassPlains:
-		if (__exista("./img/grassy-field.bmp")) {
+		if (doesFileExist("./img/grassy-field.bmp")) {
 			ImagineTeren->Picture->LoadFromFile("./img/grassy-field.bmp");
 		}
 		break;
 	case TerrainType::Dirt:
-		if (__exista("./img/cloudy-dirt.bmp")){
+		if (doesFileExist("./img/cloudy-dirt.bmp")){
 			ImagineTeren->Picture->LoadFromFile("./img/cloudy-dirt.bmp");
 		}
 		break;

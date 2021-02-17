@@ -8,12 +8,13 @@
 
 #include "src/thirdparty/mini/ini.h"
 #include "src/terrain_type.h"
+#include "src/filehelperfunctions.h"
 
 #include "LauncherMainUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TForm1 *Form1;
+TLauncherForm *LauncherForm;
 
 bool SaveBattleIniFile(std::string ini_file_name, bool show_hexes, bool cpu_control, int terrain_type,
 	std::string fisier1, std::string fisier2) {
@@ -49,31 +50,26 @@ bool SaveBattleIniFile(std::string ini_file_name, bool show_hexes, bool cpu_cont
 	return true;
 }
 
-bool __exista(const char *filename){
-	return (access(filename, 0) == 0);
-}
-
-
-
 //---------------------------------------------------------------------------
-__fastcall TForm1::TForm1(TComponent* Owner)
-        : TForm(Owner)
+__fastcall TLauncherForm::TLauncherForm(TComponent* Owner)
+		: TForm(Owner)
+		, app_state_initialized(false)
 {
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TForm1::ButtonCloseClick(TObject *Sender)
+void __fastcall TLauncherForm::ButtonCloseClick(TObject *Sender)
 {Close();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TForm1::ButtonLaunchClick(TObject *Sender) {
+void __fastcall TLauncherForm::ButtonLaunchClick(TObject *Sender) {
 	SetCurrentDir(InitialGameDir);
 	execl("MegaBattle2.exe", "MegaBattle2.exe", NULL);
 }
 
 //---------------------------------------------------------------------------
-void __fastcall TForm1::Timer1Timer(TObject *Sender)
+void __fastcall TLauncherForm::Timer1Timer(TObject *Sender)
 {//aici lucru
  TRect tmpall(0,0,300,225);
  TRect small(0,0,100,75);
@@ -89,7 +85,7 @@ void __fastcall TForm1::Timer1Timer(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-bool TForm1::LoadIniFile(const std::string& file_name) {
+bool TLauncherForm::LoadIniFile(const std::string& file_name) {
 
 	// first, create a file instance
 	mINI::INIFile file(file_name);
@@ -171,20 +167,21 @@ bool TForm1::LoadIniFile(const std::string& file_name) {
 	return true;
 }
 
-void __fastcall TForm1::FormActivate(TObject *Sender) {
+void __fastcall TLauncherForm::FormActivate(TObject *Sender) {
 	TRect tmp(0, 0, 100, 75);
 	cpRect = tmp;
 	Timer1->Enabled = true;
-	if (__exista("battle.ini")) {
-		LoadIniFile("battle.ini");
-	}
-
-	else {
+	if (false == doesFileExist("battle.ini")) {
 		MessageDlg(
 			"The file <Battle.ini> does not exist in \n\the current directory",
 			mtInformation, TMsgDlgButtons() << mbOK, 0);
-		Close();
+            // optionally, call Close();
 	}
+
+	LoadIniFile("battle.ini");
+	app_state_initialized = true;
+
+
 	OpenDialog1->InitialDir = GetCurrentDir();
 	InitialGameDir = GetCurrentDir();
 	CheckBox1->Checked = control2;
@@ -193,7 +190,10 @@ void __fastcall TForm1::FormActivate(TObject *Sender) {
 }
 
 //---------------------------------------------------------------------------
-void TForm1::ScrieINI() {
+void TLauncherForm::ScrieINI() {
+	if (false == app_state_initialized) {
+		return;
+	}
 	bool player_2_cpu_control = CheckBox1->Checked;
 	bool show_map_hexes = CheckBox2->Checked;
 	AnsiString text_value = Edit1->Text.c_str();
@@ -237,7 +237,7 @@ std::string normalize_file_name(const std::string& input, const std::string& bas
 	return result;
 }
 
-void __fastcall TForm1::NumeErou1Click(TObject *Sender) {
+void __fastcall TLauncherForm::NumeErou1Click(TObject *Sender) {
 	OpenDialog1->InitialDir = InitialGameDir + "\\heroes";
 
 	if (OpenDialog1->Execute()) {
@@ -252,7 +252,7 @@ void __fastcall TForm1::NumeErou1Click(TObject *Sender) {
 //---------------------------------------------------------------------------
 
 
-void __fastcall TForm1::NumeErou2Click(TObject *Sender) {
+void __fastcall TLauncherForm::NumeErou2Click(TObject *Sender) {
 	OpenDialog1->InitialDir = InitialGameDir + "\\heroes";
 
 	if (OpenDialog1->Execute()) {
@@ -267,13 +267,13 @@ void __fastcall TForm1::NumeErou2Click(TObject *Sender) {
 //---------------------------------------------------------------------------
 
 
-void __fastcall TForm1::FormDestroy(TObject *Sender)
+void __fastcall TLauncherForm::FormDestroy(TObject *Sender)
 {
 //	ScrieINI();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TForm1::Edit1Change(TObject *Sender) {
+void __fastcall TLauncherForm::Edit1Change(TObject *Sender) {
 	AnsiString text_value = Edit1->Text.c_str();
 	std::string str_terrain_type(text_value.c_str());
 	std::string::size_type sz;
@@ -283,16 +283,16 @@ void __fastcall TForm1::Edit1Change(TObject *Sender) {
 		Edit1->Text = 1;
 	}
 
-    ScrieINI();
+	ScrieINI();
 }
 // ---------------------------------------------------------------------------
-void __fastcall TForm1::CheckBox2Click(TObject *Sender)
+void __fastcall TLauncherForm::CheckBox2Click(TObject *Sender)
 {
 	ScrieINI();
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TForm1::CheckBox1Click(TObject *Sender)
+void __fastcall TLauncherForm::CheckBox1Click(TObject *Sender)
 {
 	ScrieINI();
 }

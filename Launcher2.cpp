@@ -4,7 +4,7 @@
 #pragma hdrstop
 #include <tchar.h>
 //---------------------------------------------------------------------------
-USEFORM("LauncherMainUnit.cpp", Form1);
+USEFORM("LauncherMainUnit.cpp", LauncherForm);
 //---------------------------------------------------------------------------
 int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 {
@@ -13,7 +13,7 @@ int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 		Application->Initialize();
 		Application->MainFormOnTaskBar = true;
         Application->Title = "Megalithic Battle Test ver 1.04";
-		Application->CreateForm(__classid(TForm1), &Form1);
+		Application->CreateForm(__classid(TLauncherForm), &LauncherForm);
 		Application->Run();
 	}
 	catch (Exception &exception)

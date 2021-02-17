@@ -34,7 +34,7 @@ typedef struct
 }TSCOORD;
 //---------------------------------------------------------------------------
 class TBattleForm : public TForm
-{//friend TMesaj;
+{
 __published:	// IDE-managed Components
 		TImageList *ImagHex;
 		TImageList *ImagBorder;
@@ -98,8 +98,6 @@ public:		// User declarations
         TRect allRect;
         TRect battleRect;
         THero *Player[2];
-		void __citeste(FILE *ff){char c;do{fscanf(ff,"%c",&c);}while(c!='^' && !feof(ff));}
-		bool __exista(char *filename){return (access(filename, 0) == 0);}
 		bool __ExistaPlayer(int juc,int lot){bool ret=true;if(juc>1 ||lot>Player[juc]->angajati) ret=false;return ret;}
 		void _CursoareInitializari();
 		void _CursoareSet0();
