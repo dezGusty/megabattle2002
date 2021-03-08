@@ -56,3 +56,82 @@ bool Game::LoadBattleIniFile() {
 	return true;
 }
 
+
+
+//---------------------------------------------------------------------------
+int GetX(int x, int y, int dir) {
+	int ret = 0;
+	switch (dir) {
+	case STGSUS:
+		if (y % 2 == 1)
+			ret = x;
+		else
+			ret = x - 1;
+		break;
+	case STG:
+		ret = x - 1;
+		break;
+	case STGJOS:
+		if (y % 2 == 1)
+			ret = x;
+		else
+			ret = x - 1;
+		break;
+	case DRPJOS:
+		if (y % 2 == 0)
+			ret = x;
+		else
+			ret = x + 1;
+		break;
+	case DRP:
+		ret = x + 1;
+		break;
+	case DRPSUS:
+		if (y % 2 == 0)
+			ret = x;
+		else
+			ret = x + 1;
+		break;
+	}
+	return ret;
+}
+
+//---------------------------------------------------------------------------
+int GetY(int x, int y, int dir) {
+	int ret = 0;
+	switch (dir) {
+	case STGSUS:
+	case DRPSUS:
+		ret = y - 1;
+		break;
+	case DRP:
+	case STG:
+		ret = y;
+		break;
+	case STGJOS:
+	case DRPJOS:
+		ret = y + 1;
+		break;
+	}
+	return ret;
+}
+
+
+void Game::InitializeTerrainMatrix() {
+	for (size_t i = 0; i < MAP_WIDTH - 1; i++) {
+		for (size_t j = 0; j < MAP_HEIGHT - 1; j++) {
+			teren[i][j] = 0;
+		}
+	}
+}
+
+void Game::PlaceAllArmiesOnTerrainMatrix() {
+	// Layout the armies of the two players on game map/matrix
+	for (size_t player_idx = 0; player_idx < 2; ++player_idx) {
+		for (size_t j = 0; j <= Player[player_idx]->angajati; j++) {
+			teren[Player[player_idx]->army_slots[j]->x]
+				[Player[player_idx]->army_slots[j]->y] =
+				10 + player_idx * 10 + j;
+		}
+	}
+}

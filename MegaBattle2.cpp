@@ -4,8 +4,8 @@
 #pragma hdrstop
 #include <tchar.h>
 //---------------------------------------------------------------------------
-USEFORM("UnitMain.cpp", BattleForm);
 USEFORM("UnitMesaj.cpp", Mesaj);
+USEFORM("UnitMain.cpp", BattleForm);
 //---------------------------------------------------------------------------
 int WINAPI _tWinMain(HINSTANCE, HINSTANCE, LPTSTR, int)
 {

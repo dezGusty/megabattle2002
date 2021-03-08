@@ -15,6 +15,7 @@
 
 #include "src/game.h"
 #include "src/simple_sound_action.h"
+#include "src/coord.h"
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -28,10 +29,7 @@
 #include <Vcl.MPlayer.hpp>
 #include <Menus.hpp>
 #include <System.ImageList.hpp>//pt btns
-//---------------------------------------------------------------------------
-typedef struct
-{int x,y;
-}TSCOORD;
+
 //---------------------------------------------------------------------------
 class TBattleForm : public TForm
 {
@@ -79,8 +77,8 @@ public:		// User declarations
 
 		bool PathwasFound;
 
-		int selected[9][7];//matr selectarilor
-		int teren[9][7];//matricea sistem
+//		int selected[9][7];//matr selectarilor
+//		int teren[9][7];//matricea sistem
 		int SelectedPlayer;
         int SelectedSlot;
         int MouseSelectX;
@@ -89,7 +87,7 @@ public:		// User declarations
         int MouseY;
         int TargetX;
         int TargetY;
-        TSCOORD path[15];
+        Coord path[15];
         TLogicButton *button[2];
 
         TCanvas *CanvasLucru;
@@ -101,7 +99,6 @@ public:		// User declarations
 		bool __ExistaPlayer(int juc,int lot){bool ret=true;if(juc>1 ||lot>Player[juc]->angajati) ret=false;return ret;}
 		void _CursoareInitializari();
 		void _CursoareSet0();
-		void _DesenHex(TCanvas *UnCanvas, int x, int y, int fel);
 		void _DesenHexuri();
 		void _DesenUnitati();
 		void _InitializariFundal();
@@ -136,6 +133,8 @@ public:		// User declarations
 
 		void PlaySoundForAction(SimpleSoundAction action);
 		void RenderBorderAndBackground();
+        void RenderSingleHex(TCanvas* canvas, int x, int y, int fel);
+
 
 		void SeteazaHex(int x,int y,int mut);
 		void SeteazaHex2(int x,int y,int mut,int exdir);

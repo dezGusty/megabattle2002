@@ -85,10 +85,12 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 					if (ExistaCoord(X, Y))
 						if (Player[SelectedPlayer]->army_slots[SelectedSlot]
 							->Ranged && Player[SelectedPlayer]->army_slots
-							[SelectedSlot]->Ammo > 0)
+							[SelectedSlot]->Ammo > 0) {
 							AtacArcas(GetPosX(X, Y), GetPosY(X, Y));
-						else
+							}
+						else{
 							AtacNormal(GetPosX(X, Y), GetPosY(X, Y));
+							}
 			}
 			// butoane logice
 			for (int i = 0; i <= 1; i++)
@@ -104,9 +106,9 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 				if (ExistaCoord(X, Y)) {
 					int ax = GetPosX(X, Y);
 					int ay = GetPosY(X, Y);
-					if (teren[ax][ay]) {
-						int tjuc = teren[ax][ay] / 20;
-						int tlot = teren[ax][ay] % 10;
+					if (game.teren[ax][ay]) {
+						int tjuc = game.teren[ax][ay] / 20;
+						int tlot = game.teren[ax][ay] % 10;
 						TMesaj *UnMesaj = new TMesaj(this, tjuc, tlot);
 						UnMesaj->ShowModal();
 						delete UnMesaj;
@@ -125,14 +127,14 @@ void __fastcall TBattleForm::FormMouseMove(TObject *Sender, TShiftState Shift,
 		if (ExistaCoord(MouseX, MouseY)) {
 			int fx = GetPosX(MouseX, MouseY);
 			int fy = GetPosY(MouseX, MouseY);
-			switch (selected[fx][fy]) {
+			switch (game.selected[fx][fy]) {
 			case 1:
 				if (MouseSelectX != fx || MouseSelectY != fy) {
 					if (MouseSelectX != -84)
 						DesenHexCopy(MouseSelectX, MouseSelectY, 2);
 					MouseSelectX = fx;
 					MouseSelectY = fy;
-					_DesenHex(Canvas, MouseSelectX, MouseSelectY, 4);
+					RenderSingleHex(Canvas, MouseSelectX, MouseSelectY, 4);
 					Cursor = TCursor(1);
 				}
 				break;
@@ -264,29 +266,38 @@ void TBattleForm::RenderBorderAndBackground() {
 }
 
 // ---------------------------------------------------------------------------
-void TBattleForm::_DesenHex(TCanvas *UnCanvas, int x, int y, int fel) {
-	if (y % 2 == 0)
-		ImagHex->Draw(UnCanvas, 20 + 80*x, 100 + 60*y, fel, true);
-	else
-		ImagHex->Draw(UnCanvas, 60 + 80*x, 100 + 60*y, fel, true);
+void TBattleForm::RenderSingleHex(TCanvas *UnCanvas, int cell_x, int cell_y,
+	int fel) {
+	if (cell_y % 2 == 0) {
+		ImagHex->Draw(UnCanvas, 20 + 80*cell_x, 100 + 60*cell_y, fel, true);
+	}
+	else {
+		ImagHex->Draw(UnCanvas, 60 + 80*cell_x, 100 + 60*cell_y, fel, true);
+	}
 }
-//---------------------------------------------------------------------------
-void TBattleForm::_DesenHexuri()
-{for(int i=0;i<7;i++)
-  for(int j=0;j<9;j++)
-   {if(!selected[j][i]) _DesenHex(CanvasFundal,j,i,0);
-	else _DesenHex(CanvasFundal,j,i,2);
-   }
- CanvasLucru->CopyRect(battleRect,CanvasFundal,battleRect);
+
+// ---------------------------------------------------------------------------
+void TBattleForm::_DesenHexuri() {
+	for (int i = 0; i < 7; i++) {
+		for (int j = 0; j < 9; j++) {
+			if (!game.selected[j][i]) {
+				RenderSingleHex(CanvasFundal, j, i, 0);
+			}
+			else {
+				RenderSingleHex(CanvasFundal, j, i, 2);
+			}
+		}
+	}
+	CanvasLucru->CopyRect(battleRect, CanvasFundal, battleRect);
 }
 
 // ---------------------------------------------------------------------------
 void TBattleForm::_DesenUnitati() {
 	for (int j = 0; j < 7; j++)
 		for (int i = 0; i < 9; i++)
-			if (teren[i][j]) {
-				int tjuc = teren[i][j] / 20;
-				int tlot = teren[i][j] % 10;
+			if (game.teren[i][j]) {
+				int tjuc = game.teren[i][j] / 20;
+				int tlot = game.teren[i][j] % 10;
 				SoldierDraw(*Player[tjuc]->army_slots[tlot], ImagUnit,
 					CanvasLucru);
 			}
@@ -308,23 +319,20 @@ void TBattleForm::_CursoareSet0() {
 		DesenHexCopy(MouseSelectX, MouseSelectY, 2);
 	MouseSelectX = -84;
 }
+
 // ---------------------------------------------------------------------------
 void TBattleForm::_InitializariMatrice() {
-	int i, j;
-	for (i = 0; i < 9; i++)
-		for (j = 0; j < 7; j++)
-			teren[i][j] = 0;
-	for (i = 0; i < 2; i++)
-		for (j = 0; j <= Player[i]->angajati; j++)
-			teren[Player[i]->army_slots[j]->x][Player[i]->army_slots[j]->y] =
-				10 + i * 10 + j;
+	game.InitializeTerrainMatrix();
+	game.PlaceAllArmiesOnTerrainMatrix();
 }
 //---------------------------------------------------------------------------
 void TBattleForm::_InitializariMatriceS() {
 	int i, j;
-	for (i = 0; i < 9; i++)
-		for (j = 0; j < 7; j++)
-			selected[i][j] = 0;
+	for (i = 0; i < 9; i++) {
+		for (j = 0; j < 7; j++) {
+			game.selected[i][j] = 0;
+		}
+	}
 }
 //---------------------------------------------------------------------------
 void TBattleForm::_InitializariSunete() {
@@ -343,26 +351,33 @@ void TBattleForm::_InitializariSunete() {
 // ---------------------------------------------------------------------------
 void TBattleForm::_PuneUnitate(TCanvas *UnCanvas, int x, int y) {
 	int tjuc, tlot, kappa = 1;
-	if (selected[x][y]) {
-		if (selected[x][y] == 1)
-			if (game.ShowHexes)
-				_DesenHex(UnCanvas, x, y, 2);
+	if (game.selected[x][y]) {
+		if (game.selected[x][y] == 1) {
+			if (game.ShowHexes) {
+				RenderSingleHex(UnCanvas, x, y, 2);
+			}
+		}
 		kappa = 0;
-		if (selected[x][y] == 2)
-			_DesenHex(UnCanvas, x, y, 3);
-		kappa = 0;
-	}
-	if (teren[x][y] && SelectedPlayer == teren[x][y]
-		/ 20 && SelectedSlot == teren[x][y] % 10) {
-		_DesenHex(UnCanvas, x, y, 1);
+		if (game.selected[x][y] == 2) {
+			RenderSingleHex(UnCanvas, x, y, 3);
+		}
 		kappa = 0;
 	}
+
+	if (game.teren[x][y] && SelectedPlayer == game.teren[x][y]
+		/ 20 && SelectedSlot == game.teren[x][y] % 10) {
+		RenderSingleHex(UnCanvas, x, y, 1);
+		kappa = 0;
+	}
+	// TODO: what was kappa?
 	if (kappa)
-		if (game.ShowHexes)
-			_DesenHex(UnCanvas, x, y, 0);
-	if (teren[x][y] != 0) {
-		tjuc = teren[x][y] / 20;
-		tlot = teren[x][y] % 10;
+		if (game.ShowHexes) {
+			RenderSingleHex(UnCanvas, x, y, 0);
+		}
+
+	if (game.teren[x][y] != 0) {
+		tjuc = game.teren[x][y] / 20;
+		tlot = game.teren[x][y] % 10;
 		SoldierDraw(*Player[tjuc]->army_slots[tlot], ImagUnit, UnCanvas);
 	}
 }
@@ -403,9 +418,9 @@ void TBattleForm::AI_find_target(int &tempx, int &tempy) {
 	int i, j; // pt parcurgerea matricei
 	for (i = 0; i <= 8; i++)
 		for (j = 0; j <= 6; j++)
-			if (selected[i][j] == 2 && teren[i][j] && teren[i][j]
+			if (game.selected[i][j] == 2 && game.teren[i][j] && game.teren[i][j]
 				/ 20 == oponent) {
-				int lot = teren[i][j] % 10;
+				int lot = game.teren[i][j] % 10;
 				int k = meddmg;
 				k -= Player[oponent]->army_slots[lot]->Armor;
 				k -= k * Player[oponent]->army_slots[lot]->Protection / 100;
@@ -431,7 +446,7 @@ void TBattleForm::AI_find_target(int &tempx, int &tempy) {
 	}
 }
 
-//---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 	int oponent = (SelectedPlayer + 1) % 2;
 	float raport = 500; // din cate lovituri iese un kill;
@@ -462,7 +477,7 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 	int mut = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
 	for (int i = 0; i < mut; i++) {
 		int aok = 0;
-		if (y > ty)
+		if (y > ty) {
 			if (x > tx) {
 				if (ExistaHex2(x, y, STGSUS)) {
 					x = GetX(x, y, STGSUS);
@@ -477,7 +492,8 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 					aok = 1;
 				}
 			}
-		if (!aok && y == ty)
+		}
+		if (!aok && y == ty) {
 			if (x > tx) {
 				if (ExistaHex2(x, y, STG)) {
 					x = GetX(x, y, STG);
@@ -492,7 +508,9 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 					aok = 1;
 				}
 			}
-		if (!aok && y < ty)
+		}
+
+		if (!aok && y < ty) {
 			if (x > tx) {
 				if (ExistaHex2(x, y, STGJOS)) {
 					x = GetX(x, y, STGJOS);
@@ -507,6 +525,7 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 					aok = 1;
 				}
 			}
+		}
 	}
 	tempx = x;
 	tempy = y;
@@ -588,11 +607,14 @@ void TBattleForm::DesenHexCopy(int x, int y, int fel) {
 inline void TBattleForm::DesenHexuriSelectate() {
 	for (int j = 0; j < 7; j++)
 		for (int i = 0; i < 9; i++) {
-			if (selected[i][j] == 1)
-				if (game.ShowHexes)
+			if (game.selected[i][j] == 1) {
+				if (game.ShowHexes) {
 					DesenHexCopy(i, j, 2);
-			if (selected[i][j] == 2)
+				}
+			}
+			else if (game.selected[i][j] == 2) {
 				DesenHexCopy(i, j, 3);
+			}
 		}
 }
 
@@ -614,10 +636,10 @@ void TBattleForm::DisplayAtac(int x, int y, int felatac) {
 	}
 }
 
-//---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 void TBattleForm::ExecutaAtac(int tx, int ty, bool range) {
-	int tjuc = teren[tx][ty] / 20;
-	int tlot = teren[tx][ty] % 10;
+	int tjuc = game.teren[tx][ty] / 20;
+	int tlot = game.teren[tx][ty] % 10;
 	int juc = SelectedPlayer;
 	int lot = SelectedSlot;
 	int k = random(100) + 1;
@@ -629,10 +651,14 @@ void TBattleForm::ExecutaAtac(int tx, int ty, bool range) {
 		k -= Player[tjuc]->army_slots[tlot]->Armor;
 		k -= k * Player[tjuc]->army_slots[tlot]->Protection / 100;
 		if (Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player
-			[SelectedPlayer]->army_slots[SelectedSlot]->Ammo <= 0)
+			[SelectedPlayer]->army_slots[SelectedSlot]->Ammo <= 0) {
 			k /= 2;
-		if (k <= 0)
+		}
+
+		if (k <= 0) {
 			k = 1;
+		}
+
 		ShowComment(juc, lot, k, 0);
 		if (!range) {
 			PlaySoundForAction(SimpleSoundAction::AttackHitMelee);
@@ -646,7 +672,7 @@ void TBattleForm::ExecutaAtac(int tx, int ty, bool range) {
 		}
 		Player[tjuc]->army_slots[tlot]->Hp -= k;
 		if (Player[tjuc]->army_slots[tlot]->Hp <= 0) {
-			teren[tx][ty] = 0;
+			game.teren[tx][ty] = 0;
 			Player[tjuc]->army_slots[tlot]->alive = false;
 			PlaySoundForAction(SimpleSoundAction::Die);
 			Selecteaza(tx, ty, false, 0);
@@ -671,15 +697,16 @@ void TBattleForm::ExecutaAtac(int tx, int ty, bool range) {
 				Player[tjuc]->army_slots[tlot]->DamageMin);
 			k -= Player[juc]->army_slots[lot]->Armor;
 			k -= k * Player[juc]->army_slots[lot]->Protection / 100;
-			if (k <= 0)
+			if (k <= 0) {
 				k = 1;
+			}
 			ShowComment(tjuc, tlot, k, 1);
 			PlaySoundForAction(SimpleSoundAction::AttackHitMelee);
 			DisplayAtac(Player[juc]->army_slots[lot]->x,
 				Player[juc]->army_slots[lot]->y, 0);
 			Player[juc]->army_slots[lot]->Hp -= k;
 			if (Player[juc]->army_slots[lot]->Hp <= 0) {
-				teren[Player[juc]->army_slots[lot]->x]
+				game.teren[Player[juc]->army_slots[lot]->x]
 					[Player[juc]->army_slots[lot]->y] = 0;
 				Player[juc]->army_slots[lot]->alive = false;
 				PlaySoundForAction(SimpleSoundAction::Die);
@@ -704,11 +731,13 @@ inline bool TBattleForm::ExistaCoord(int mx, int my) {
 		int fx = mx - 20;
 		int fy = my - 110;
 		fy /= 60;
-		if ((fy % 2 == 1 && mx < 60) || (fy % 2 == 0 && mx > 740))
+		if ((fy % 2 == 1 && mx < 60) || (fy % 2 == 0 && mx > 740)) {
 			ret = false;
+		}
 	}
-	else
+	else {
 		ret = false;
+	}
 	return ret;
 }
 
@@ -769,7 +798,7 @@ inline bool TBattleForm::ExistaHex2(int x, int y, int dir) {
 	if (ExistaHex(x, y, dir)) {
 		int ax = GetX(x, y, dir);
 		int ay = GetY(x, y, dir);
-		if (teren[ax][ay])
+		if (game.teren[ax][ay])
 			ret = false;
 	}
 	else
@@ -860,7 +889,6 @@ inline int TBattleForm::GetY(int x, int y, int dir) {
 //---------------------------------------------------------------------------
 void TBattleForm::IntraInJoc() {
 	game.LoadBattleIniFile();
-	//__IncarcaINI();
 
 	LoadBattleBackgroundPictureForType(game.felteren);
 
@@ -923,9 +951,11 @@ void TBattleForm::Joc() {
 		[SelectedPlayer]->army_slots[SelectedSlot]->Ammo > 0)
 		SeteazaHexArcas(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->y);
+
 	DesenHexuriSelectate();
 	Selecteaza(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, 1, 1);
+
 	button[0] = new TLogicButton;
 	button[0]->Left = 0;
 	button[0]->Top = 550;
@@ -975,10 +1005,10 @@ inline void TBattleForm::MutaUnitate(int newx, int newy) {
 	if (newx != tx || newy != ty) {
 		PlaySoundForAction(SimpleSoundAction::Move);
 		Selecteaza(tx, ty, false, 0);
-		teren[tx][ty] = 0;
+		game.teren[tx][ty] = 0;
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->x = newx;
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->y = newy;
-		teren[newx][newy] = SelectedPlayer * 10 + SelectedSlot + 10;
+		game.teren[newx][newy] = SelectedPlayer * 10 + SelectedSlot + 10;
 		Selecteaza(newx, newy, true, 0);
 	}
 }
@@ -996,7 +1026,7 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 			path[pas].y = y;
 			if (TargetX == x && TargetY == y)
 				PathwasFound = true;
-			else if ((teren[x][y] == 0) ||
+			else if ((game.teren[x][y] == 0) ||
 				(Player[SelectedPlayer]->army_slots[SelectedSlot]
 				->x == x && Player[SelectedPlayer]->army_slots[SelectedSlot]
 				->y == y)) {
@@ -1080,7 +1110,8 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 				}
 				if (y < TargetY) // prioritate jos
 				{
-					if (x > TargetX) // prior stg
+					// prior stg
+					if (x > TargetX) {
 						if (TargetY - y >= x - TargetX) {
 							ordin[0] = STGJOS;
 							ordin[1] = DRPJOS;
@@ -1097,7 +1128,10 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 							ordin[4] = DRP;
 							ordin[5] = DRPSUS;
 						}
-					if (x <= TargetX) // prior drp
+					}
+
+					// prior drp
+					if (x <= TargetX) {
 						if (TargetY - y >= TargetX - x) {
 							ordin[0] = DRPJOS;
 							ordin[1] = STGJOS;
@@ -1114,9 +1148,11 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 							ordin[4] = STG;
 							ordin[5] = STGSUS;
 						}
-					if (x == TargetX) // prior jos
-						if (y % 2 == 0) // drpjos
-						{
+					}
+
+					// drpjos
+					if (x == TargetX) {
+						if (y % 2 == 0) {
 							ordin[0] = DRPJOS;
 							ordin[1] = STGJOS;
 							ordin[2] = DRP;
@@ -1133,6 +1169,7 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 							ordin[4] = STGSUS;
 							ordin[5] = DRPSUS;
 						}
+					}
 				}
 				for (int k = 0; k <= 5; k++) {
 					int i = ordin[k];
@@ -1179,8 +1216,8 @@ void TBattleForm::PlaySoundForAction(SimpleSoundAction action) {
 
 // ---------------------------------------------------------------------------
 inline void TBattleForm::Selecteaza(int x, int y, bool ShowPlayer, int felhex) {
-	int juc = teren[x][y] / 20;
-	int lot = teren[x][y] % 10;
+	int juc = game.teren[x][y] / 20;
+	int lot = game.teren[x][y] % 10;
 	TRect FigRect(20 + x*80, 60*y + 20, 100 + x*80, 60*y + 180);
 	TRect temp2(10 + x*80, 60*y + 10, 90 + x*80, 60*y + 170);
 	if (y % 2 == 1) {
@@ -1191,8 +1228,9 @@ inline void TBattleForm::Selecteaza(int x, int y, bool ShowPlayer, int felhex) {
 	}
 	CanvasFundal->CopyRect(FigRect, ImagineTeren->Canvas, temp2);
 	// desen fig sus sus
-	if (y > 1)
+	if (y > 1) {
 		_PuneUnitate(CanvasFundal, x, y - 2);
+	}
 	if (ExistaHex(x, y, STGSUS)) {
 		int ax = GetX(x, y, STGSUS);
 		int ay = GetY(x, y, STGSUS);
@@ -1204,12 +1242,13 @@ inline void TBattleForm::Selecteaza(int x, int y, bool ShowPlayer, int felhex) {
 		_PuneUnitate(CanvasFundal, ax, ay);
 	}
 	// desen hex
-	if (game.ShowHexes || felhex == 1 || felhex == 3 || felhex == 4)
-		_DesenHex(CanvasFundal, x, y, felhex);
-	if (!ShowPlayer && teren[x][y]) { // _DesenHex(CanvasFundal,x,y,4);
+	if (game.ShowHexes || felhex == 1 || felhex == 3 || felhex == 4) {
+		RenderSingleHex(CanvasFundal, x, y, felhex);
+	}
+	if (!ShowPlayer && game.teren[x][y]) { // _DesenHex(CanvasFundal,x,y,4);
 	}
 	// desen unitate
-	if (ShowPlayer && teren[x][y]) {
+	if (ShowPlayer && game.teren[x][y]) {
 		SoldierDraw(*Player[juc]->army_slots[lot], ImagUnit, CanvasFundal);
 	}
 	if (ExistaHex(x, y, STGJOS)) {
@@ -1223,8 +1262,9 @@ inline void TBattleForm::Selecteaza(int x, int y, bool ShowPlayer, int felhex) {
 		_PuneUnitate(CanvasFundal, ax, ay);
 	}
 	// desen fig jos jos
-	if (y < 5)
+	if (y < 5) {
 		_PuneUnitate(CanvasFundal, x, y + 2);
+	}
 	CanvasLucru->CopyRect(FigRect, CanvasFundal, FigRect);
 	Canvas->CopyRect(FigRect, CanvasLucru, FigRect);
 }
@@ -1266,16 +1306,19 @@ inline void TBattleForm::SelecteazaUrmator() {
 		// desenari de curatare a formului daca cel dinainte a fost human
 		if (Player[exJuc]->control == HUMAN) {
 			CanvasFundal->Draw(10, 10, ImagineTeren->Picture->Bitmap);
-			if (game.ShowHexes)
+			if (game.ShowHexes) {
 				_DesenHexuri();
-			else
+			}
+			else {
 				CanvasLucru->CopyRect(battleRect, CanvasFundal, battleRect);
+			}
 			_DesenUnitati();
 			Canvas->CopyRect(battleRect, CanvasLucru, battleRect);
 		}
-		else
+		else {
 			Selecteaza(Player[exJuc]->army_slots[exSlot]->x,
-			Player[exJuc]->army_slots[exSlot]->y, 1, 0);
+				Player[exJuc]->army_slots[exSlot]->y, 1, 0);
+		}
 		Selecteaza(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
 			Player[SelectedPlayer]->army_slots[SelectedSlot]->y, 1, 1);
 		// desenari (in asteptarea noii comenzi) valabil doar pt control uman
@@ -1314,62 +1357,70 @@ inline void TBattleForm::SelecteazaUrmator() {
 
 // ---------------------------------------------------------------------------
 inline void TBattleForm::SeteazaHex(int x, int y, int mut) {
-	if (mut > 0)
-		for (int i = STGSUS; i <= DRPSUS; i++)
+	if (mut <= 0) {
+		return;
+	}
+	for (int i = STGSUS; i <= DRPSUS; i++)
+		if (ExistaHex(x, y, i)) {
+			int ax = GetX(x, y, i);
+			int ay = GetY(x, y, i);
+			if (game.teren[ax][ay]) {
+				if (game.teren[ax][ay] / 20 != SelectedPlayer) {
+					game.selected[ax][ay] = 2;
+				}
+				else {
+					game.selected[ax][ay] = 0;
+				}
+			}
+			else {
+				game.selected[ax][ay] = 1;
+				SeteazaHex2(ax, ay, mut - 1, i);
+			}
+		}
+}
+
+// ---------------------------------------------------------------------------
+inline void TBattleForm::SeteazaHex2(int x, int y, int mut, int exdir) {
+	if (mut <= 0) {
+		return;
+	}
+	for (int i = STGSUS; i <= DRPSUS; i++)
+		if (i != (exdir + 3) % 6)
 			if (ExistaHex(x, y, i)) {
 				int ax = GetX(x, y, i);
 				int ay = GetY(x, y, i);
-				if (teren[ax][ay]) {
-					if (teren[ax][ay] / 20 != SelectedPlayer) {
-						selected[ax][ay] = 2;
+				if (game.teren[ax][ay]) {
+					if (game.teren[ax][ay] / 20 != SelectedPlayer) {
+						game.selected[ax][ay] = 2;
 					}
-					else
-						selected[ax][ay] = 0;
+					else {
+						game.selected[ax][ay] = 0;
+					}
 				}
 				else {
-					selected[ax][ay] = 1;
+					game.selected[ax][ay] = 1;
 					SeteazaHex2(ax, ay, mut - 1, i);
 				}
 			}
 }
 
 // ---------------------------------------------------------------------------
-inline void TBattleForm::SeteazaHex2(int x, int y, int mut, int exdir) {
-	if (mut > 0)
-		for (int i = STGSUS; i <= DRPSUS; i++)
-			if (i != (exdir + 3) % 6)
-				if (ExistaHex(x, y, i)) {
-					int ax = GetX(x, y, i);
-					int ay = GetY(x, y, i);
-					if (teren[ax][ay]) {
-						if (teren[ax][ay] / 20 != SelectedPlayer) {
-							selected[ax][ay] = 2;
-						}
-						else
-							selected[ax][ay] = 0;
-					}
-					else {
-						selected[ax][ay] = 1;
-						SeteazaHex2(ax, ay, mut - 1, i);
-					}
-				}
-}
-
-// ---------------------------------------------------------------------------
 inline void TBattleForm::SeteazaHexArcas(int x, int y) {
+//TODO: move this to game class
 	for (int i = 0; i < 9; i++)
 		for (int j = 0; j < 7; j++)
-			if (!selected[i][j] && teren[i][j])
-				if (teren[i][j] / 20 != teren[x][y] / 20)
-					selected[i][j] = 2;
+			if (!game.selected[i][j] && game.teren[i][j])
+				if (game.teren[i][j] / 20 != game.teren[x][y] / 20)
+					game.selected[i][j] = 2;
 }
 
 // ---------------------------------------------------------------------------
 inline void TBattleForm::ShowComment(int juc, int lot, int damage, int position)
 {
 	TRect cpyRect(50, 550 + 25*position, 750, 575 + 25*position);
-	if (!position)
+	if (!position) {
 		cpyRect.Bottom = 600;
+	}
 	CanvasLucru->Font->Color = (TColor)RGB(255, 175, 75);
 	CanvasLucru->Font->Size = 10;
 	CanvasLucru->Font->Name = "MS Reference Serif";
@@ -1377,21 +1428,26 @@ inline void TBattleForm::ShowComment(int juc, int lot, int damage, int position)
 	CanvasLucru->CopyRect(cpyRect, CanvasFundal, cpyRect);
 	char buf[255];
 	if (position == 0)
+		if (damage > 0) {
+			sprintf(buf,
+				"The %s succesfully attacked the enemy, dealing %d points of damage",
+				Player[juc]->army_slots[lot]->GetNume().c_str(), damage);
+		}
+		else {
+			sprintf(buf,
+				"The %s tried to attack the enemy, but failed miserably",
+				Player[juc]->army_slots[lot]->GetNume().c_str());
+		}
+	else {
 		if (damage > 0)
 			sprintf(buf,
-			"The %s succesfully attacked the enemy, dealing %d points of damage",
+			"The %s succesfully retaliated against the enemy, dealing %d points of damage",
 			Player[juc]->army_slots[lot]->GetNume().c_str(), damage);
-		else
-			sprintf(buf,
-			"The %s tried to attack the enemy, but failed miserably",
-			Player[juc]->army_slots[lot]->GetNume().c_str(), damage);
-	else if (damage > 0)
-		sprintf(buf,
-		"The %s succesfully retaliated against the enemy, dealing %d points of damage",
-		Player[juc]->army_slots[lot]->GetNume().c_str(), damage);
-	else
-		sprintf(buf, "The %s tried to retaliate, but failed miserably",
-		Player[juc]->army_slots[lot]->GetNume().c_str(), damage);
+		else {
+			sprintf(buf, "The %s tried to retaliate, but failed miserably",
+				Player[juc]->army_slots[lot]->GetNume().c_str());
+		}
+	}
 	CanvasLucru->TextOut(75, 555 + 20*position, buf);
 	Canvas->CopyRect(cpyRect, CanvasLucru, cpyRect);
 }
@@ -1400,8 +1456,8 @@ inline void TBattleForm::ShowComment(int juc, int lot, int damage, int position)
 inline void TBattleForm::StergeHexuriSelectate() {
 	for (int j = 0; j < 7; j++)
 		for (int i = 0; i < 9; i++)
-			if (selected[i][j]) {
-				selected[i][j] = 0;
+			if (game.selected[i][j]) {
+				game.selected[i][j] = 0;
 				DesenHexCopy(i, j, 0);
 			}
 }

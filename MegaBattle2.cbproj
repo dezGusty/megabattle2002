@@ -126,6 +126,12 @@
             <BuildOrder>1</BuildOrder>
             <PCH>true</PCH>
         </PCHCompile>
+        <CppCompile Include="src\coord.cpp">
+            <BuildOrder>16</BuildOrder>
+        </CppCompile>
+        <None Include="src\coord.h">
+            <BuildOrder>17</BuildOrder>
+        </None>
         <CppCompile Include="src\filehelperfunctions.cpp">
             <BuildOrder>12</BuildOrder>
         </CppCompile>
@@ -169,8 +175,8 @@
         <CppCompile Include="UTSoldat.cpp">
             <BuildOrder>5</BuildOrder>
         </CppCompile>
-        <FormResources Include="UnitMain.dfm"/>
         <FormResources Include="UnitMesaj.dfm"/>
+        <FormResources Include="UnitMain.dfm"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
