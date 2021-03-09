@@ -49,10 +49,11 @@ public:
 		- TOPRIGHT
 
 		@return The coordinates of the neighbour cell.
+		TODO: make static
 	*/
-    Coord GetNeighbourCell(Coord sourceCell, int direction);
+	Coord GetNeighbourCell(Coord sourceCell, int direction);
 
-    /**
+	/**
 		Check to see whether there is a neighbouring cell (for a source cell), in a desired target direction.
 		@param sourceCell The source to use as starting point.
 		@param direction  The direction in which to get the neighbour. Should be one of:
@@ -64,9 +65,28 @@ public:
 		- TOPRIGHT
 
 		@return True if there is a neighbour in the desired direction.
-                False otherwise.
+				False otherwise.
+		TODO: make static
 	*/
 	bool DoesNeighbourExist(Coord sourceCell, int direction);
+
+	/**
+		Check to see whether a neighbouring cell is available, in a desired target direction.
+
+		@param sourceCell The source to use as starting point.
+		@param direction  The direction in which to get the neighbour. Should be one of:
+		- TOPLEFT
+		- LEFT
+		- BOTLEFT
+		- BOTRIGHT
+		- RIGHT
+		- TOPRIGHT
+
+		@return True if there is a neighbour in the desired direction.
+				False otherwise.
+		TODO: make static
+	*/
+	bool IsNeighbourTerrainAvailable(Coord sourceCell, int direction);
 
 	std::string left_player_cfg_file;
 	std::string right_player_cfg_file;

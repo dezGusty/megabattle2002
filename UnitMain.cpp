@@ -489,14 +489,14 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 		int aok = 0;
 		if (y > ty) {
 			if (x > tx) {
-				if (ExistaHex2(x, y, STGSUS)) {
+				if (game.IsNeighbourTerrainAvailable(Coord{x, y}, STGSUS)) {
 					x = GetX(x, y, STGSUS);
 					y = GetY(x, y, STGSUS);
 					aok = 1;
 				}
 			}
 			else {
-				if (ExistaHex2(x, y, DRPSUS)) {
+				if (game.IsNeighbourTerrainAvailable(Coord{x, y}, DRPSUS)) {
 					x = GetX(x, y, DRPSUS);
 					y = GetY(x, y, DRPSUS);
 					aok = 1;
@@ -505,14 +505,14 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 		}
 		if (!aok && y == ty) {
 			if (x > tx) {
-				if (ExistaHex2(x, y, STG)) {
+				if (game.IsNeighbourTerrainAvailable(Coord{x, y}, STG)) {
 					x = GetX(x, y, STG);
 					y = GetY(x, y, STG);
 					aok = 1;
 				}
 			}
 			else {
-				if (ExistaHex2(x, y, DRP)) {
+				if (game.IsNeighbourTerrainAvailable(Coord{x, y}, DRP)) {
 					x = GetX(x, y, DRP);
 					y = GetY(x, y, DRP);
 					aok = 1;
@@ -522,14 +522,14 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 
 		if (!aok && y < ty) {
 			if (x > tx) {
-				if (ExistaHex2(x, y, STGJOS)) {
+				if (game.IsNeighbourTerrainAvailable(Coord{x, y}, STGJOS)) {
 					x = GetX(x, y, STGJOS);
 					y = GetY(x, y, STGJOS);
 					aok = 1;
 				}
 			}
 			else {
-				if (ExistaHex2(x, y, DRPJOS)) {
+				if (game.IsNeighbourTerrainAvailable(Coord{x, y}, DRPJOS)) {
 					x = GetX(x, y, DRPJOS);
 					y = GetY(x, y, DRPJOS);
 					aok = 1;
@@ -759,71 +759,6 @@ inline bool TBattleForm::ExistaCoord(int mx, int my) {
 	else {
 		ret = false;
 	}
-	return ret;
-}
-
-// ---------------------------------------------------------------------------
-//inline bool TBattleForm::ExistaHex(int x, int y, int dir) {
-//	bool ret = true;
-//	if (x >= 0 && x < 9 && y >= 0 && y < 7)
-//		switch (dir) {
-//		case STGSUS:
-//			if (y <= 0)
-//				ret = false;
-//			else if (y % 2 == 0) {
-//				if (x <= 0)
-//					ret = false;
-//			}
-//			break;
-//		case STG:
-//			if (x <= 0)
-//				ret = false;
-//			break;
-//		case STGJOS:
-//			if (y >= 6)
-//				ret = false;
-//			else if (y % 2 == 0) {
-//				if (x <= 0)
-//					ret = false;
-//			}
-//			break;
-//		case DRPJOS:
-//			if (y >= 6)
-//				ret = false;
-//			else if (y % 2 == 1) {
-//				if (x >= 8)
-//					ret = false;
-//			}
-//			break;
-//		case DRP:
-//			if (x >= 8)
-//				ret = false;
-//			break;
-//		case DRPSUS:
-//			if (y <= 0)
-//				ret = false;
-//			else if (y % 2 == 1) {
-//				if (x >= 8)
-//					ret = false;
-//			}
-//			break;
-//		}
-//	else
-//		ret = false;
-//	return ret;
-//}
-
-// ---------------------------------------------------------------------------
-inline bool TBattleForm::ExistaHex2(int x, int y, int dir) {
-	bool ret = true;
-	if (game.DoesNeighbourExist(Coord{x, y}, dir)) {
-		int ax = GetX(x, y, dir);
-		int ay = GetY(x, y, dir);
-		if (game.teren[ax][ay])
-			ret = false;
-	}
-	else
-		ret = false;
 	return ret;
 }
 
@@ -1058,62 +993,69 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 				->x == x && Player[SelectedPlayer]->army_slots[SelectedSlot]
 				->y == y)) {
 				int ordin[6] = {STGSUS, DRPSUS, STG, DRP, STGJOS, DRPJOS};
-				if (y > TargetY) // prioritate sus
-				{
-					if (x > TargetX) // prior stg
-						if (x - TargetX > y - TargetY) {
-							ordin[0] = STGSUS;
-							ordin[1] = STG;
-							ordin[2] = STGJOS;
-							ordin[3] = DRPSUS;
-							ordin[4] = DRP;
-							ordin[5] = DRPJOS;
-						}
-						else {
-							ordin[0] = STGSUS;
-							ordin[1] = DRPSUS;
-							ordin[2] = STG;
-							ordin[3] = DRP;
-							ordin[4] = STGJOS;
-							ordin[5] = DRPJOS;
-						}
-					if (x < TargetX) // prior drp
-						if (TargetX - x > y - TargetY) {
-							ordin[0] = DRPSUS;
-							ordin[1] = DRP;
-							ordin[2] = DRPJOS;
-							ordin[3] = STGSUS;
-							ordin[4] = STG;
-							ordin[5] = STGJOS;
-						}
-						else {
-							ordin[0] = DRPSUS;
-							ordin[1] = STGSUS;
-							ordin[2] = DRP;
-							ordin[3] = STG;
-							ordin[4] = DRPJOS;
-							ordin[5] = STGJOS;
-						}
-					if (x == TargetX) // prior sus
-						if (y % 2 == 0) // drpsus
-						{
-							ordin[0] = DRPSUS;
-							ordin[1] = DRP;
-							ordin[2] = DRPJOS;
-							ordin[3] = STGSUS;
-							ordin[4] = STG;
-							ordin[5] = STGJOS;
-						}
-						else // stgsus
-						{
-							ordin[0] = STGSUS;
-							ordin[1] = STG;
-							ordin[2] = STGJOS;
-							ordin[3] = DRPSUS;
-							ordin[4] = DRP;
-							ordin[5] = DRPJOS;
-						}
-				}
+                 // prioritate sus
+				if (y > TargetY) {
+					 // prior stg
+					 if (x > TargetX) {
+						 if (x - TargetX > y - TargetY) {
+							 ordin[0] = STGSUS;
+							 ordin[1] = STG;
+							 ordin[2] = STGJOS;
+							 ordin[3] = DRPSUS;
+							 ordin[4] = DRP;
+							 ordin[5] = DRPJOS;
+						 }
+						 else {
+							 ordin[0] = STGSUS;
+							 ordin[1] = DRPSUS;
+							 ordin[2] = STG;
+							 ordin[3] = DRP;
+							 ordin[4] = STGJOS;
+							 ordin[5] = DRPJOS;
+						 }
+					 }
+					 // prior drp
+					 if (x < TargetX) {
+						 if (TargetX - x > y - TargetY) {
+							 ordin[0] = DRPSUS;
+							 ordin[1] = DRP;
+							 ordin[2] = DRPJOS;
+							 ordin[3] = STGSUS;
+							 ordin[4] = STG;
+							 ordin[5] = STGJOS;
+						 }
+						 else {
+							 ordin[0] = DRPSUS;
+							 ordin[1] = STGSUS;
+							 ordin[2] = DRP;
+							 ordin[3] = STG;
+							 ordin[4] = DRPJOS;
+							 ordin[5] = STGJOS;
+						 }
+					 }
+					 // prior sus
+					 if (x == TargetX) {
+						 if (y % 2 == 0) {
+							 // drpsus
+							 ordin[0] = DRPSUS;
+							 ordin[1] = DRP;
+							 ordin[2] = DRPJOS;
+							 ordin[3] = STGSUS;
+							 ordin[4] = STG;
+							 ordin[5] = STGJOS;
+						 }
+						 else {
+							 // stgsus
+							 ordin[0] = STGSUS;
+							 ordin[1] = STG;
+							 ordin[2] = STGJOS;
+							 ordin[3] = DRPSUS;
+							 ordin[4] = DRP;
+							 ordin[5] = DRPJOS;
+						 }
+					 }
+				 }
+
 				if (y == TargetY) // prioritate oriz
 				{
 					if (x > TargetX) // prior stg

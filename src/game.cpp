@@ -223,6 +223,33 @@ bool Game::DoesNeighbourExist(Coord sourceCell, int direction) {
 	return true;
 }
 
+/**
+ Check to see whether a neighbouring cell is available, in a desired target direction.
+
+ @param sourceCell The source to use as starting point.
+ @param direction  The direction in which to get the neighbour. Should be one of:
+ - TOPLEFT
+ - LEFT
+ - BOTLEFT
+ - BOTRIGHT
+ - RIGHT
+ - TOPRIGHT
+
+ @return True if there is a neighbour in the desired direction.
+ False otherwise.
+ */
+bool Game::IsNeighbourTerrainAvailable(Coord sourceCell, int direction) {
+	if (false == DoesNeighbourExist(sourceCell, direction)) {
+		return false;
+	}
+
+	Coord cell = GetNeighbourCell(sourceCell, direction);
+	if (teren[cell.x][cell.y]) {
+		return false;
+	}
+
+	return true;
+}
 
 void Game::InitializeTerrainMatrix() {
 	for (size_t i = 0; i < MAP_WIDTH; i++) {
@@ -235,7 +262,8 @@ void Game::InitializeTerrainMatrix() {
 void Game::PlacePlayerArmyOnTerrainMatrix(const Hero& hero) {
 	// Layout the armies of the two players on game map/matrix
 	for (auto count = 0; count < hero.angajati; ++count) {
-		teren[hero.army_slots[count]->x][hero.army_slots[count]->y] = 10 + hero.player_id * 10 + count;
+		teren[hero.army_slots[count]->x][hero.army_slots[count]->y] =
+			10 + hero.player_id * 10 + count;
 	}
 }
 
