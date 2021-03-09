@@ -484,61 +484,59 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 	int ty = Player[oponent]->army_slots[curent]->y;
 	int x = Player[SelectedPlayer]->army_slots[SelectedSlot]->x;
 	int y = Player[SelectedPlayer]->army_slots[SelectedSlot]->y;
+	Coord selectedCell{x, y};
+	Coord moveCell{x, y};
+	Coord opponentCell{tx, ty};
+
 	int mut = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
 	for (int i = 0; i < mut; i++) {
 		int aok = 0;
-		if (y > ty) {
-			if (x > tx) {
-				if (game.IsNeighbourTerrainAvailable(Coord{x, y}, STGSUS)) {
-					x = GetX(x, y, STGSUS);
-					y = GetY(x, y, STGSUS);
+		if (moveCell.y > ty) {
+			if (moveCell.x > tx) {
+				if (game.IsNeighbourTerrainAvailable(moveCell, STGSUS)) {
+					moveCell = game.GetNeighbourCell(moveCell, STGSUS);
 					aok = 1;
 				}
 			}
 			else {
-				if (game.IsNeighbourTerrainAvailable(Coord{x, y}, DRPSUS)) {
-					x = GetX(x, y, DRPSUS);
-					y = GetY(x, y, DRPSUS);
+				if (game.IsNeighbourTerrainAvailable(moveCell, DRPSUS)) {
+					moveCell = game.GetNeighbourCell(moveCell, DRPSUS);
 					aok = 1;
 				}
 			}
 		}
-		if (!aok && y == ty) {
-			if (x > tx) {
-				if (game.IsNeighbourTerrainAvailable(Coord{x, y}, STG)) {
-					x = GetX(x, y, STG);
-					y = GetY(x, y, STG);
+		if (!aok && moveCell.y == ty) {
+			if (moveCell.x > tx) {
+				if (game.IsNeighbourTerrainAvailable(moveCell, STG)) {
+					moveCell = game.GetNeighbourCell(moveCell, STG);
 					aok = 1;
 				}
 			}
 			else {
-				if (game.IsNeighbourTerrainAvailable(Coord{x, y}, DRP)) {
-					x = GetX(x, y, DRP);
-					y = GetY(x, y, DRP);
+				if (game.IsNeighbourTerrainAvailable(moveCell, DRP)) {
+					moveCell = game.GetNeighbourCell(moveCell, DRP);
 					aok = 1;
 				}
 			}
 		}
 
-		if (!aok && y < ty) {
-			if (x > tx) {
-				if (game.IsNeighbourTerrainAvailable(Coord{x, y}, STGJOS)) {
-					x = GetX(x, y, STGJOS);
-					y = GetY(x, y, STGJOS);
+		if (!aok && moveCell.y < ty) {
+			if (moveCell.x > tx) {
+				if (game.IsNeighbourTerrainAvailable(moveCell, STGJOS)) {
+					moveCell = game.GetNeighbourCell(moveCell, STGJOS);
 					aok = 1;
 				}
 			}
 			else {
-				if (game.IsNeighbourTerrainAvailable(Coord{x, y}, DRPJOS)) {
-					x = GetX(x, y, DRPJOS);
-					y = GetY(x, y, DRPJOS);
+				if (game.IsNeighbourTerrainAvailable(moveCell, DRPJOS)) {
+					moveCell = game.GetNeighbourCell(moveCell, DRPJOS);
 					aok = 1;
 				}
 			}
 		}
 	}
-	tempx = x;
-	tempy = y;
+	tempx = moveCell.x;
+	tempy = moveCell.y;
 }
 
 //---------------------------------------------------------------------------
@@ -1143,9 +1141,8 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 				for (int k = 0; k <= 5; k++) {
 					int i = ordin[k];
 					if (game.DoesNeighbourExist({x, y}, i)) {
-						int ax = GetX(x, y, i);
-						int ay = GetY(x, y, i);
-						PathFinding(ax, ay, mut, pas + 1);
+						Coord nextCell = game.GetNeighbourCell({x, y}, i);
+						PathFinding(nextCell.x, nextCell.y, mut, pas + 1);
 					}
 				}
 			}
