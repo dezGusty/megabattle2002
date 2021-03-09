@@ -138,7 +138,6 @@ public:		// User declarations
 
 		void SeteazaHex(int x,int y,int mut);
 		void SeteazaHex2(int x,int y,int mut,int exdir);
-		void SeteazaHexArcas(int x,int y);
 		void ShowComment(int juc,int lot,int damage,int position);
 		void StergeHexuriSelectate();
 		void Joc();

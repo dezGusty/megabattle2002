@@ -11,6 +11,8 @@ public:
 	std::string nume;
 	int portret;
 
+    int player_id; // should be unique
+
 	std::vector<Soldier*> army_slots;
 
 	int control; // 1=human; 2=computer;

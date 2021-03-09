@@ -78,19 +78,25 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 		if (Button == mbLeft) {
 			if (X > 20 && X < 780 && Y > 110 && Y < 530 && Cursor != TCursor(3))
 			{
-				if (Cursor == TCursor(1)) // mutare
-					if (ExistaCoord(X, Y))
+				// mutare
+				if (Cursor == TCursor(1)) {
+					if (ExistaCoord(X, Y)) {
 						Muta(GetPosX(X, Y), GetPosY(X, Y));
-				if (Cursor == TCursor(2)) // atac
-					if (ExistaCoord(X, Y))
+					}
+				}
+				// atac
+				if (Cursor == TCursor(2)) {
+					if (ExistaCoord(X, Y)) {
 						if (Player[SelectedPlayer]->army_slots[SelectedSlot]
 							->Ranged && Player[SelectedPlayer]->army_slots
 							[SelectedSlot]->Ammo > 0) {
 							AtacArcas(GetPosX(X, Y), GetPosY(X, Y));
-							}
-						else{
+						}
+						else {
 							AtacNormal(GetPosX(X, Y), GetPosY(X, Y));
-							}
+						}
+					}
+				}
 			}
 			// butoane logice
 			for (int i = 0; i <= 1; i++)
@@ -149,12 +155,13 @@ void __fastcall TBattleForm::FormMouseMove(TObject *Sender, TShiftState Shift,
 				break;
 			}
 		}
-		else
+		else {
 			_CursoareSet0();
+        }
 
 		// butoane logice
 		if (game.FazaJoc == 1) {
-			for (int i = 0; i <= 1; i++)
+			for (int i = 0; i <= 1; i++) {
 				if (X > button[i]->Left && X < button[i]->Right && Y >
 					button[i]->Top && Y < button[i]->Bottom) {
 					if (button[i]->Phase == 0) {
@@ -168,6 +175,7 @@ void __fastcall TBattleForm::FormMouseMove(TObject *Sender, TShiftState Shift,
 					button[i]->Phase = 0;
 					button[i]->Draw(ImagButon, Canvas);
 				}
+            }
 		}
 	}
 }
@@ -189,13 +197,15 @@ void __fastcall TBattleForm::FormMouseUp(TObject *Sender, TMouseButton Button,
 			}
 	}
 }
+
 //---------------------------------------------------------------------------
-void __fastcall TBattleForm::FormPaint(TObject *Sender)
-{Canvas->CopyRect(allRect,CanvasLucru,allRect);
+void __fastcall TBattleForm::FormPaint(TObject *Sender) {
+	Canvas->CopyRect(allRect, CanvasLucru, allRect);
 }
-//---------------------------------------------------------------------------
-void __fastcall TBattleForm::AITimerTimer(TObject *Sender)
-{AIAflaOrdin();
+
+// ---------------------------------------------------------------------------
+void __fastcall TBattleForm::AITimerTimer(TObject *Sender) {
+	AIAflaOrdin();
 }
 
 //---------------------------------------------------------------------------
@@ -323,17 +333,10 @@ void TBattleForm::_CursoareSet0() {
 // ---------------------------------------------------------------------------
 void TBattleForm::_InitializariMatrice() {
 	game.InitializeTerrainMatrix();
-	game.PlaceAllArmiesOnTerrainMatrix();
+	game.PlacePlayerArmyOnTerrainMatrix(*Player[0]);
+	game.PlacePlayerArmyOnTerrainMatrix(*Player[1]);
 }
-//---------------------------------------------------------------------------
-void TBattleForm::_InitializariMatriceS() {
-	int i, j;
-	for (i = 0; i < 9; i++) {
-		for (j = 0; j < 7; j++) {
-			game.selected[i][j] = 0;
-		}
-	}
-}
+
 //---------------------------------------------------------------------------
 void TBattleForm::_InitializariSunete() {
 	MediaPlayer1->FileName = "sound\\sword.wav";
@@ -389,10 +392,14 @@ void TBattleForm::AIAflaOrdin() {
 	int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
 	SeteazaHex(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt);
+
 	if (Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player
-		[SelectedPlayer]->army_slots[SelectedSlot]->Ammo > 0)
-		SeteazaHexArcas(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
-		Player[SelectedPlayer]->army_slots[SelectedSlot]->y);
+		[SelectedPlayer]->army_slots[SelectedSlot]->Ammo > 0) {
+		game.MarkCellForRangedAttack
+			(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+			Player[SelectedPlayer]->army_slots[SelectedSlot]->y);
+	}
+
 	AI_find_target(tempx, tempy);
 	if (tempx == -1 && tempy == -1) // adica nu s-a gasit vreo tinta de atacat;
 	{
@@ -900,9 +907,14 @@ void TBattleForm::IntraInJoc() {
 
 	CanvasLucru->CopyRect(allRect, CanvasFundal, allRect);
 	Canvas->CopyRect(allRect, CanvasLucru, allRect);
+
 	Player[0] = new THero(game.left_player_cfg_file.c_str());
 	Player[1] = new THero(game.right_player_cfg_file.c_str());
+
 	Player[0]->control = HUMAN;
+	Player[0]->player_id = 0;
+	Player[1]->player_id = 1;
+
 	if (game.control2){
 		Player[1]->control = COMPUTER;
 	}
@@ -922,7 +934,7 @@ void TBattleForm::IntraInJoc() {
 
 	_CursoareInitializari();
 	_InitializariMatrice();
-	_InitializariMatriceS();
+	game.ResetSelectionMatrix();
 	_DesenUnitati();
 
 	// display logo
@@ -941,15 +953,16 @@ void TBattleForm::Joc() {
 	if (game.ShowHexes)
 		_DesenHexuri();
 	_InitializariMatrice();
-	_InitializariMatriceS();
+	game.ResetSelectionMatrix();
 	_DesenUnitati();
 	Canvas->CopyRect(allRect, CanvasLucru, allRect);
 	int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
 	SeteazaHex(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt);
+
 	if (Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player
 		[SelectedPlayer]->army_slots[SelectedSlot]->Ammo > 0)
-		SeteazaHexArcas(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+		game.MarkCellForRangedAttack(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->y);
 
 	DesenHexuriSelectate();
@@ -1302,7 +1315,7 @@ inline void TBattleForm::SelecteazaUrmator() {
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->Retal =
 			Player[SelectedPlayer]->army_slots[SelectedSlot]->RetalNum;
 		// matricea selected e deja plina => s-o golim
-		_InitializariMatriceS();
+		game.ResetSelectionMatrix();
 		// desenari de curatare a formului daca cel dinainte a fost human
 		if (Player[exJuc]->control == HUMAN) {
 			CanvasFundal->Draw(10, 10, ImagineTeren->Picture->Bitmap);
@@ -1329,9 +1342,10 @@ inline void TBattleForm::SelecteazaUrmator() {
 				Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt);
 			if (Player[SelectedPlayer]->army_slots[SelectedSlot]
 				->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]
-				->Ammo > 0)
-				SeteazaHexArcas(Player[SelectedPlayer]->army_slots[SelectedSlot]
+				->Ammo > 0) {
+				game.MarkCellForRangedAttack(Player[SelectedPlayer]->army_slots[SelectedSlot]
 				->x, Player[SelectedPlayer]->army_slots[SelectedSlot]->y);
+			}
 			DesenHexuriSelectate();
 			Canvas->CopyRect(battleRect, CanvasLucru, battleRect);
 			_CursoareSet0();
@@ -1402,16 +1416,6 @@ inline void TBattleForm::SeteazaHex2(int x, int y, int mut, int exdir) {
 					SeteazaHex2(ax, ay, mut - 1, i);
 				}
 			}
-}
-
-// ---------------------------------------------------------------------------
-inline void TBattleForm::SeteazaHexArcas(int x, int y) {
-//TODO: move this to game class
-	for (int i = 0; i < 9; i++)
-		for (int j = 0; j < 7; j++)
-			if (!game.selected[i][j] && game.teren[i][j])
-				if (game.teren[i][j] / 20 != game.teren[x][y] / 20)
-					game.selected[i][j] = 2;
 }
 
 // ---------------------------------------------------------------------------

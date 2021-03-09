@@ -118,20 +118,38 @@ int GetY(int x, int y, int dir) {
 
 
 void Game::InitializeTerrainMatrix() {
-	for (size_t i = 0; i < MAP_WIDTH - 1; i++) {
-		for (size_t j = 0; j < MAP_HEIGHT - 1; j++) {
+	for (size_t i = 0; i < MAP_WIDTH; i++) {
+		for (size_t j = 0; j < MAP_HEIGHT; j++) {
 			teren[i][j] = 0;
 		}
 	}
 }
 
-void Game::PlaceAllArmiesOnTerrainMatrix() {
+void Game::PlacePlayerArmyOnTerrainMatrix(const Hero& hero) {
 	// Layout the armies of the two players on game map/matrix
-	for (size_t player_idx = 0; player_idx < 2; ++player_idx) {
-		for (size_t j = 0; j <= Player[player_idx]->angajati; j++) {
-			teren[Player[player_idx]->army_slots[j]->x]
-				[Player[player_idx]->army_slots[j]->y] =
-				10 + player_idx * 10 + j;
+	for (auto count = 0; count < hero.angajati; ++count) {
+		teren[hero.army_slots[count]->x][hero.army_slots[count]->y] = 10 + hero.player_id * 10 + count;
+	}
+}
+
+void Game::MarkCellForRangedAttack(unsigned cell_x, unsigned cell_y) {
+	for (int i = 0; i < MAP_WIDTH; i++) {
+		for (int j = 0; j < MAP_HEIGHT; j++) {
+			if (!selected[i][j] && teren[i][j]) {
+				if (teren[i][j] / 20 != teren[cell_x][cell_y] / 20) {
+					selected[i][j] = 2;
+				}
+			}
 		}
 	}
 }
+
+void Game::ResetSelectionMatrix(){
+                           int i, j;
+	for (i = 0; i < 9; i++) {
+		for (j = 0; j < 7; j++) {
+			selected[i][j] = 0;
+		}
+	}
+}
+

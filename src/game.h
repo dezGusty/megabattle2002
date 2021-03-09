@@ -17,8 +17,8 @@ enum HexDirection {
 #define DRP    4
 #define DRPSUS 5
 
-#define MAP_WIDTH 10
-#define MAP_HEIGHT 8
+#define MAP_WIDTH 9
+#define MAP_HEIGHT 7
 
 class Game {
 public:
@@ -46,9 +46,12 @@ public:
 
 	Hero *Player[2];
 
-	int selected[MAP_WIDTH - 1][MAP_HEIGHT - 1]; // matr selectarilor
-	int teren[MAP_WIDTH - 1][MAP_HEIGHT - 1]; // matricea sistem
+	int selected[MAP_WIDTH][MAP_HEIGHT]; // matr selectarilor
+	int teren[MAP_WIDTH][MAP_HEIGHT]; // matricea sistem
 
 	void InitializeTerrainMatrix();
-    void PlaceAllArmiesOnTerrainMatrix();
+	void PlacePlayerArmyOnTerrainMatrix(const Hero& hero);
+
+    void ResetSelectionMatrix();
+	void MarkCellForRangedAttack(unsigned cell_x, unsigned cell_y);
 };
