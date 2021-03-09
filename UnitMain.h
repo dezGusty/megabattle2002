@@ -116,7 +116,7 @@ public:		// User declarations
 		void DisplayAtac(int x,int y,int felatac);
 		void ExecutaAtac(int tx,int ty,bool range);
 		bool ExistaCoord(int mx,int my);
-		bool ExistaHex(int x,int y,int dir);
+		//bool ExistaHex(int x,int y,int dir);
 		bool ExistaHex2(int x,int y,int dir);
 		int GetPosX(int mx,int my);
 		int GetPosY(int mx,int my);

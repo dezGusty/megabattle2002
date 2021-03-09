@@ -57,63 +57,170 @@ bool Game::LoadBattleIniFile() {
 }
 
 
+/**
+	Get a neighbouring cell for a source cell, in a desired target direction.
+	@param sourceCell The source to use.
+	@param direction  The direction in which to get the neighbour. Should be one of:
+	- TOPLEFT
+	- LEFT
+	- BOTLEFT
+	- BOTRIGHT
+	- RIGHT
+	- TOPRIGHT
+	@return The coordinates of the neighbour cell.
+*/
+Coord Game::GetNeighbourCell(Coord sourceCell, int direction){
+	Coord result(sourceCell);
 
-//---------------------------------------------------------------------------
-int GetX(int x, int y, int dir) {
-	int ret = 0;
-	switch (dir) {
-	case STGSUS:
-		if (y % 2 == 1)
-			ret = x;
-		else
-			ret = x - 1;
+	switch (direction) {
+	case TOPLEFT:
+		result.y = sourceCell.y - 1;
+		if (sourceCell.y % 2 == 1) {
+			result.x = sourceCell.x;
+		}
+		else {
+			result.x = sourceCell.x - 1;
+		}
 		break;
-	case STG:
-		ret = x - 1;
+
+	case LEFT:
+		result.y = sourceCell.y;
+		result.x = sourceCell.x - 1;
 		break;
-	case STGJOS:
-		if (y % 2 == 1)
-			ret = x;
-		else
-			ret = x - 1;
+
+	case BOTLEFT:
+		result.y = sourceCell.y + 1;
+		if (sourceCell.y % 2 == 1) {
+			result.x = sourceCell.x;
+		}
+		else {
+			result.x = sourceCell.x - 1;
+		}
 		break;
-	case DRPJOS:
-		if (y % 2 == 0)
-			ret = x;
-		else
-			ret = x + 1;
+
+	case TOPRIGHT:
+		result.y = sourceCell.y - 1;
+		if (sourceCell.y % 2 == 0) {
+			result.x = sourceCell.x;
+		}
+		else {
+			result.x = sourceCell.x + 1;
+		}
 		break;
-	case DRP:
-		ret = x + 1;
+
+	case RIGHT:
+		result.y = sourceCell.y;
+		result.x = sourceCell.x + 1;
 		break;
-	case DRPSUS:
-		if (y % 2 == 0)
-			ret = x;
-		else
-			ret = x + 1;
+
+	case BOTRIGHT:
+		result.y = sourceCell.y + 1;
+		if (result.y % 2 == 0) {
+			result.x = sourceCell.x;
+		}
+		else {
+			result.x = sourceCell.x + 1;
+		}
 		break;
+
+	default: ;
 	}
-	return ret;
+
+	return result;
 }
 
-//---------------------------------------------------------------------------
-int GetY(int x, int y, int dir) {
-	int ret = 0;
-	switch (dir) {
-	case STGSUS:
-	case DRPSUS:
-		ret = y - 1;
-		break;
-	case DRP:
-	case STG:
-		ret = y;
-		break;
-	case STGJOS:
-	case DRPJOS:
-		ret = y + 1;
-		break;
+/**
+	Check to see whether there is a neighbouring cell (for a source cell), in a desired target direction.
+	@param sourceCell The source to use as starting point.
+	@param direction  The direction in which to get the neighbour. Should be one of:
+	- TOPLEFT
+	- LEFT
+	- BOTLEFT
+	- BOTRIGHT
+	- RIGHT
+	- TOPRIGHT
+
+	@return True if there is a neighbour in the desired direction.
+			False otherwise.
+*/
+bool Game::DoesNeighbourExist(Coord sourceCell, int direction) {
+
+	// Input validation.
+	if (sourceCell.x < 0 || sourceCell.y < 0) {
+		return false;
 	}
-	return ret;
+
+	if (sourceCell.x >= MAP_WIDTH || sourceCell.y >= MAP_HEIGHT) {
+		return false;
+	}
+
+	// Check the various directions
+	switch (direction) {
+	case TOPLEFT:
+		if (sourceCell.y <= 0) {
+			return false;
+		}
+
+		if (sourceCell.y % 2 == 0) {
+			if (sourceCell.x <= 0) {
+				return false;
+			}
+		}
+
+		break;
+
+	case LEFT:
+		if (sourceCell.x <= 0) {
+			return false;
+		}
+		break;
+
+	case BOTLEFT:
+		if (sourceCell.y >= 6) {
+			return false;
+		}
+		if (sourceCell.y % 2 == 0) {
+			if (sourceCell.x <= 0) {
+				return false;
+			}
+		}
+		break;
+
+	case TOPRIGHT:
+		if (sourceCell.y <= 0) {
+			return false;
+		}
+
+		if (sourceCell.y % 2 == 1) {
+			if (sourceCell.x >= MAP_WIDTH - 1) {
+				return false;
+			}
+		}
+		break;
+
+	case RIGHT:
+		if (sourceCell.x >= MAP_WIDTH - 1) {
+			return false;
+		}
+		break;
+
+	case BOTRIGHT:
+		if (sourceCell.y >= MAP_HEIGHT - 1) {
+			return false;
+		}
+
+		if (sourceCell.y % 2 == 1) {
+			if (sourceCell.x >= MAP_WIDTH - 1) {
+				return false;
+			}
+		}
+
+		break;
+
+	default: ;
+	}
+
+	return true;
 }
 
 
@@ -152,4 +259,3 @@ void Game::ResetSelectionMatrix(){
 		}
 	}
 }
-

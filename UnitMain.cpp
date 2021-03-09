@@ -460,7 +460,8 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 	int meddmg = (Player[SelectedPlayer]->army_slots[SelectedSlot]->DamageMax +
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->DamageMin) / 2;
 	int curent; // slotul inamicului selectat
-	for (int lot = 0; lot <= Player[oponent]->angajati; lot++)
+
+	for (int lot = 0; lot <= Player[oponent]->angajati; lot++) {
 		if (Player[oponent]->army_slots[lot]->alive) {
 			int k = meddmg;
 			k -= Player[oponent]->army_slots[lot]->Armor;
@@ -477,6 +478,8 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 				curent = lot;
 			}
 		}
+	}
+
 	int tx = Player[oponent]->army_slots[curent]->x;
 	int ty = Player[oponent]->army_slots[curent]->y;
 	int x = Player[SelectedPlayer]->army_slots[SelectedSlot]->x;
@@ -580,32 +583,43 @@ void TBattleForm::DesenHexCopy(int x, int y, int fel) {
 		FigRect.Right += 40;
 		temp2.Right += 40;
 	}
+
 	CanvasFundal->CopyRect(FigRect, ImagineTeren->Canvas, temp2);
-	if (y > 1)
+	if (y > 1) {
 		_PuneUnitate(CanvasFundal, x, y - 2); // desen sus sus
-	if (ExistaHex(x, y, STGSUS)) {
+	}
+
+    //TODO:XXX ax,ay
+
+	if (game.DoesNeighbourExist(Coord {x, y}, STGSUS)) {
 		int ax = GetX(x, y, STGSUS);
 		int ay = GetY(x, y, STGSUS);
 		_PuneUnitate(CanvasFundal, ax, ay);
 	}
-	if (ExistaHex(x, y, DRPSUS)) {
+
+	if (game.DoesNeighbourExist(Coord {x, y}, DRPSUS)) {
 		int ax = GetX(x, y, DRPSUS);
 		int ay = GetY(x, y, DRPSUS);
 		_PuneUnitate(CanvasFundal, ax, ay);
 	}
+
 	_PuneUnitate(CanvasFundal, x, y);
-	if (ExistaHex(x, y, STGJOS)) {
+
+	if (game.DoesNeighbourExist(Coord {x, y}, STGJOS)) {
 		int ax = GetX(x, y, STGJOS);
 		int ay = GetY(x, y, STGJOS);
 		_PuneUnitate(CanvasFundal, ax, ay);
 	}
-	if (ExistaHex(x, y, DRPJOS)) {
+
+	if (game.DoesNeighbourExist(Coord {x, y}, DRPJOS)) {
 		int ax = GetX(x, y, DRPJOS);
 		int ay = GetY(x, y, DRPJOS);
 		_PuneUnitate(CanvasFundal, ax, ay);
 	}
-	if (y < 5)
+
+	if (y < 5) {
 		_PuneUnitate(CanvasFundal, x, y + 2); // desen jos jos
+	}
 	CanvasLucru->CopyRect(FigRect, CanvasFundal, FigRect);
 	Canvas->CopyRect(FigRect, CanvasLucru, FigRect);
 }
@@ -749,60 +763,60 @@ inline bool TBattleForm::ExistaCoord(int mx, int my) {
 }
 
 // ---------------------------------------------------------------------------
-inline bool TBattleForm::ExistaHex(int x, int y, int dir) {
-	bool ret = true;
-	if (x >= 0 && x < 9 && y >= 0 && y < 7)
-		switch (dir) {
-		case STGSUS:
-			if (y <= 0)
-				ret = false;
-			else if (y % 2 == 0) {
-				if (x <= 0)
-					ret = false;
-			}
-			break;
-		case STG:
-			if (x <= 0)
-				ret = false;
-			break;
-		case STGJOS:
-			if (y >= 6)
-				ret = false;
-			else if (y % 2 == 0) {
-				if (x <= 0)
-					ret = false;
-			}
-			break;
-		case DRPJOS:
-			if (y >= 6)
-				ret = false;
-			else if (y % 2 == 1) {
-				if (x >= 8)
-					ret = false;
-			}
-			break;
-		case DRP:
-			if (x >= 8)
-				ret = false;
-			break;
-		case DRPSUS:
-			if (y <= 0)
-				ret = false;
-			else if (y % 2 == 1) {
-				if (x >= 8)
-					ret = false;
-			}
-			break;
-		}
-	else
-		ret = false;
-	return ret;
-}
+//inline bool TBattleForm::ExistaHex(int x, int y, int dir) {
+//	bool ret = true;
+//	if (x >= 0 && x < 9 && y >= 0 && y < 7)
+//		switch (dir) {
+//		case STGSUS:
+//			if (y <= 0)
+//				ret = false;
+//			else if (y % 2 == 0) {
+//				if (x <= 0)
+//					ret = false;
+//			}
+//			break;
+//		case STG:
+//			if (x <= 0)
+//				ret = false;
+//			break;
+//		case STGJOS:
+//			if (y >= 6)
+//				ret = false;
+//			else if (y % 2 == 0) {
+//				if (x <= 0)
+//					ret = false;
+//			}
+//			break;
+//		case DRPJOS:
+//			if (y >= 6)
+//				ret = false;
+//			else if (y % 2 == 1) {
+//				if (x >= 8)
+//					ret = false;
+//			}
+//			break;
+//		case DRP:
+//			if (x >= 8)
+//				ret = false;
+//			break;
+//		case DRPSUS:
+//			if (y <= 0)
+//				ret = false;
+//			else if (y % 2 == 1) {
+//				if (x >= 8)
+//					ret = false;
+//			}
+//			break;
+//		}
+//	else
+//		ret = false;
+//	return ret;
+//}
 
 // ---------------------------------------------------------------------------
 inline bool TBattleForm::ExistaHex2(int x, int y, int dir) {
 	bool ret = true;
-	if (ExistaHex(x, y, dir)) {
+	if (game.DoesNeighbourExist(Coord{x, y}, dir)) {
 		int ax = GetX(x, y, dir);
 		int ay = GetY(x, y, dir);
 		if (game.teren[ax][ay])
@@ -1186,7 +1200,7 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 				}
 				for (int k = 0; k <= 5; k++) {
 					int i = ordin[k];
-					if (ExistaHex(x, y, i)) {
+					if (game.DoesNeighbourExist({x, y}, i)) {
 						int ax = GetX(x, y, i);
 						int ay = GetY(x, y, i);
 						PathFinding(ax, ay, mut, pas + 1);
@@ -1244,12 +1258,14 @@ inline void TBattleForm::Selecteaza(int x, int y, bool ShowPlayer, int felhex) {
 	if (y > 1) {
 		_PuneUnitate(CanvasFundal, x, y - 2);
 	}
-	if (ExistaHex(x, y, STGSUS)) {
+
+	if (game.DoesNeighbourExist({x, y}, STGSUS)) {
 		int ax = GetX(x, y, STGSUS);
 		int ay = GetY(x, y, STGSUS);
 		_PuneUnitate(CanvasFundal, ax, ay);
 	}
-	if (ExistaHex(x, y, DRPSUS)) {
+
+	if (game.DoesNeighbourExist({x, y}, DRPSUS)) {
 		int ax = GetX(x, y, DRPSUS);
 		int ay = GetY(x, y, DRPSUS);
 		_PuneUnitate(CanvasFundal, ax, ay);
@@ -1264,16 +1280,19 @@ inline void TBattleForm::Selecteaza(int x, int y, bool ShowPlayer, int felhex) {
 	if (ShowPlayer && game.teren[x][y]) {
 		SoldierDraw(*Player[juc]->army_slots[lot], ImagUnit, CanvasFundal);
 	}
-	if (ExistaHex(x, y, STGJOS)) {
+
+	if (game.DoesNeighbourExist({x, y}, STGJOS)) {
 		int ax = GetX(x, y, STGJOS);
 		int ay = GetY(x, y, STGJOS);
 		_PuneUnitate(CanvasFundal, ax, ay);
 	}
-	if (ExistaHex(x, y, DRPJOS)) {
+
+	if (game.DoesNeighbourExist(Coord {x, y}, DRPJOS)) {
 		int ax = GetX(x, y, DRPJOS);
 		int ay = GetY(x, y, DRPJOS);
 		_PuneUnitate(CanvasFundal, ax, ay);
 	}
+
 	// desen fig jos jos
 	if (y < 5) {
 		_PuneUnitate(CanvasFundal, x, y + 2);
@@ -1374,8 +1393,8 @@ inline void TBattleForm::SeteazaHex(int x, int y, int mut) {
 	if (mut <= 0) {
 		return;
 	}
-	for (int i = STGSUS; i <= DRPSUS; i++)
-		if (ExistaHex(x, y, i)) {
+	for (int i = STGSUS; i <= DRPSUS; i++) {
+		if (game.DoesNeighbourExist(Coord {x, y}, i)) {
 			int ax = GetX(x, y, i);
 			int ay = GetY(x, y, i);
 			if (game.teren[ax][ay]) {
@@ -1391,6 +1410,7 @@ inline void TBattleForm::SeteazaHex(int x, int y, int mut) {
 				SeteazaHex2(ax, ay, mut - 1, i);
 			}
 		}
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -1398,9 +1418,9 @@ inline void TBattleForm::SeteazaHex2(int x, int y, int mut, int exdir) {
 	if (mut <= 0) {
 		return;
 	}
-	for (int i = STGSUS; i <= DRPSUS; i++)
-		if (i != (exdir + 3) % 6)
-			if (ExistaHex(x, y, i)) {
+	for (int i = STGSUS; i <= DRPSUS; i++) {
+		if (i != (exdir + 3) % 6) {
+			if (game.DoesNeighbourExist(Coord {x, y}, i)) {
 				int ax = GetX(x, y, i);
 				int ay = GetY(x, y, i);
 				if (game.teren[ax][ay]) {
@@ -1416,6 +1436,8 @@ inline void TBattleForm::SeteazaHex2(int x, int y, int mut, int exdir) {
 					SeteazaHex2(ax, ay, mut - 1, i);
 				}
 			}
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------

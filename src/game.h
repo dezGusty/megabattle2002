@@ -2,8 +2,9 @@
 
 #include <string>
 
-#include "src/terrain_type.h"
+#include "src/coord.h"
 #include "src/hero.h"
+#include "src/terrain_type.h"
 
 enum HexDirection {
 	Invalid = -1, TopLeft = 0, Left = 1, BottomLeft = 2, BottomRight = 3,
@@ -17,6 +18,13 @@ enum HexDirection {
 #define DRP    4
 #define DRPSUS 5
 
+#define TOPLEFT  0
+#define LEFT     1
+#define BOTLEFT  2
+#define BOTRIGHT 3
+#define RIGHT    4
+#define TOPRIGHT 5
+
 #define MAP_WIDTH 9
 #define MAP_HEIGHT 7
 
@@ -28,6 +36,37 @@ public:
 	// TODO: move functionality from UnitMain; refactor into single function.
 	int GetX(int x, int y, int dir);
 	int GetY(int x, int y, int dir);
+
+	/**
+		Get a neighbouring cell for a source cell, in a desired target direction.
+		@param sourceCell The source to use as starting point.
+		@param direction  The direction in which to get the neighbour. Should be one of:
+		- TOPLEFT
+		- LEFT
+		- BOTLEFT
+		- BOTRIGHT
+		- RIGHT
+		- TOPRIGHT
+
+		@return The coordinates of the neighbour cell.
+	*/
+    Coord GetNeighbourCell(Coord sourceCell, int direction);
+
+    /**
+		Check to see whether there is a neighbouring cell (for a source cell), in a desired target direction.
+		@param sourceCell The source to use as starting point.
+		@param direction  The direction in which to get the neighbour. Should be one of:
+		- TOPLEFT
+		- LEFT
+		- BOTLEFT
+		- BOTRIGHT
+		- RIGHT
+		- TOPRIGHT
+
+		@return True if there is a neighbour in the desired direction.
+                False otherwise.
+	*/
+	bool DoesNeighbourExist(Coord sourceCell, int direction);
 
 	std::string left_player_cfg_file;
 	std::string right_player_cfg_file;
