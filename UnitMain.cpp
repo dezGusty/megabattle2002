@@ -117,27 +117,29 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 						delete UnMesaj;
 					}
 					else {
-						// Show path?
-						//todo:xxx
-
-						TargetX = ax;
-						TargetY = ay;
 						PathwasFound = false;
-						int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
+						int mt =
+							Player[SelectedPlayer]->army_slots[SelectedSlot]
+							->MovesLeft;
 
-						PathFinding(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
-						Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt, 0);
+						PathFinding(
+							Coord {ax, ay},
+							Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+							Player[SelectedPlayer]->army_slots[SelectedSlot]->y,
+							mt,
+							0);
 
-std::stringstream ss;
+						std::stringstream ss;
 						for (int i = 1; i <= mt; i++) {
 							// show hex
 							RenderSingleHex(Canvas, path[i].x, path[i].y, 2);
-							ss << "- " << path[i].x << ", " << path[i].y << std::endl;
+							ss << "- " << path[i].x << ", " << path[i]
+								.y << std::endl;
 
 						}
 						Canvas->TextOut(800, 25, ss.str().c_str());
 
-                    }
+					}
 				}
 		}
 	}
@@ -594,20 +596,21 @@ void TBattleForm::AtacArcas(int tintax, int tintay) {
 
 //---------------------------------------------------------------------------
 void TBattleForm::AtacNormal(int tintax, int tintay) {
-	TargetX = tintax;
-	TargetY = tintay;
 	PathwasFound = false;
 	int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
 
-	PathFinding(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+	PathFinding(Coord {tintax, tintay
+	}, Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt, 0);
 
 	StergeHexuriSelectate();
 	for (int i = 1; i <= mt; i++) {
-		if (TargetX == path[i].x && TargetY == path[i].y)
+		if (tintax == path[i].x && tintay == path[i].y) {
 			i = mt + 1;
-		else
+		}
+		else {
 			MutaUnitate(path[i].x, path[i].y);
+		}
 		::Sleep(100);
 	}
 	ExecutaAtac(tintax, tintay, false);
@@ -922,18 +925,17 @@ void TBattleForm::Joc() {
 
 //---------------------------------------------------------------------------
 inline void TBattleForm::Muta(int newx, int newy) {
-	TargetX = newx;
-	TargetY = newy;
 	PathwasFound = false;
 	int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
 
-	PathFinding(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+	PathFinding(Coord {newx, newy},
+		Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt, 0);
 
 	StergeHexuriSelectate();
 	for (int i = 1; i <= mt; i++) {
 		MutaUnitate(path[i].x, path[i].y);
-		if (TargetX == path[i].x && TargetY == path[i].y)
+		if (newx == path[i].x && newy == path[i].y)
 			i = mt + 1;
 		::Sleep(100);
 	}
@@ -963,7 +965,7 @@ void TBattleForm::OrdinSkipTurn() {
 }
 
 // ---------------------------------------------------------------------------
-inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
+inline void TBattleForm::PathFinding(Coord target, int x, int y, int mut, int pas) {
 	if (PathwasFound) {
 		return;
 	}
@@ -974,17 +976,17 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 
 	path[pas].x = x;
 	path[pas].y = y;
-	if (TargetX == x && TargetY == y)
+	if (target.x == x && target.y == y)
 		PathwasFound = true;
 	else if ((game.teren[x][y] == 0) ||
 		(Player[SelectedPlayer]->army_slots[SelectedSlot]->x == x && Player
 		[SelectedPlayer]->army_slots[SelectedSlot]->y == y)) {
 		// prioritise going up
 		int ordin[6] = {TOPLEFT, TOPRIGHT, LEFT, RIGHT, BOTLEFT, BOTRIGHT};
-		if (y > TargetY) {
+		if (y > target.y) {
 			// prioritize going left
-			if (x > TargetX) {
-				if (x - TargetX > y - TargetY) {
+			if (x > target.x) {
+				if (x - target.x > y - target.y) {
 					ordin[0] = TOPLEFT;
 					ordin[1] = LEFT;
 					ordin[2] = BOTLEFT;
@@ -1002,8 +1004,8 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 				}
 			}
 			// prior drp
-			if (x < TargetX) {
-				if (TargetX - x > y - TargetY) {
+			if (x < target.x) {
+				if (target.x - x > y - target.y) {
 					ordin[0] = TOPRIGHT;
 					ordin[1] = RIGHT;
 					ordin[2] = BOTRIGHT;
@@ -1021,7 +1023,7 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 				}
 			}
 			// prior sus
-			if (x == TargetX) {
+			if (x == target.x) {
 				if (y % 2 == 0) {
 					// TOPRIGHT
 					ordin[0] = TOPRIGHT;
@@ -1043,9 +1045,9 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 			}
 		}
 
-		if (y == TargetY) // prioritate oriz
+		if (y == target.y) // prioritate oriz
 		{
-			if (x > TargetX) // prior stg
+			if (x > target.x) // prior stg
 			{
 				ordin[0] = LEFT;
 				ordin[1] = RIGHT;
@@ -1054,7 +1056,7 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 				ordin[4] = BOTRIGHT;
 				ordin[5] = TOPRIGHT;
 			}
-			if (x < TargetX) // prior drp
+			if (x < target.x) // prior drp
 			{
 				ordin[0] = RIGHT;
 				ordin[1] = LEFT;
@@ -1065,11 +1067,11 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 			}
 		}
 
-		if (y < TargetY) // prioritate jos
+		if (y < target.y) // prioritate jos
 		{
 			// prior stg
-			if (x > TargetX) {
-				if (TargetY - y >= x - TargetX) {
+			if (x > target.x) {
+				if (target.y - y >= x - target.x) {
 					ordin[0] = BOTLEFT;
 					ordin[1] = BOTRIGHT;
 					ordin[2] = LEFT;
@@ -1088,9 +1090,9 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 			}
 
 			// prior drp
-			if (x <= TargetX) {
+			if (x <= target.x) {
 				// prioritize bottom over right
-				if (TargetY - y >= TargetX - x) {
+				if (target.y - y >= target.x - x) {
 					ordin[0] = BOTRIGHT;
 					ordin[1] = BOTLEFT;
 					ordin[2] = RIGHT;
@@ -1109,7 +1111,7 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 			}
 
 			// up or down
-			if (x == TargetX) {
+			if (x == target.x) {
 				if (y % 2 == 0) {
 					ordin[0] = BOTRIGHT;
 					ordin[1] = BOTLEFT;
@@ -1133,7 +1135,7 @@ inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
 			int i = ordin[k];
 			if (game.DoesNeighbourExist({x, y}, i)) {
 				Coord nextCell = game.GetNeighbourCell({x, y}, i);
-				PathFinding(nextCell.x, nextCell.y, mut, pas + 1);
+				PathFinding(target, nextCell.x, nextCell.y, mut, pas + 1);
 			}
 		}
 	}

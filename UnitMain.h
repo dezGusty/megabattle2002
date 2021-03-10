@@ -77,17 +77,13 @@ public:		// User declarations
 
 		bool PathwasFound;
 
-//		int selected[9][7];//matr selectarilor
-//		int teren[9][7];//matricea sistem
 		int SelectedPlayer;
-        int SelectedSlot;
-        int MouseSelectX;
-        int MouseSelectY;
-        int MouseX;
-        int MouseY;
-        int TargetX;
-        int TargetY;
-        Coord path[15];
+		int SelectedSlot;
+		int MouseSelectX;
+		int MouseSelectY;
+		int MouseX;
+		int MouseY;
+		Coord path[15];
         TLogicButton *button[2];
 
         TCanvas *CanvasLucru;
@@ -118,8 +114,6 @@ public:		// User declarations
 		bool ExistaCoord(int mx,int my);
 		int GetPosX(int mx,int my);
 		int GetPosY(int mx,int my);
-//		int GetX(int x,int y,int dir);
-//		int GetY(int x,int y,int dir);
 		void IntraInJoc();
 
 		void LoadBattleBackgroundPictureForType(TerrainType terrain_type);
@@ -127,7 +121,7 @@ public:		// User declarations
 		void Muta(int newx,int newy);
 		void MutaUnitate(int newx,int newy);
 		void OrdinSkipTurn();
-		void PathFinding(int x,int y,int mut,int pas);
+		void PathFinding(Coord target, int x,int y,int mut,int pas);
 
 		void PlaySoundForAction(SimpleSoundAction action);
 		void RenderBorderAndBackground();
