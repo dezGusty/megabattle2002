@@ -122,7 +122,7 @@ Coord Game::GetNeighbourCell(Coord sourceCell, int direction){
 
 	case BOTRIGHT:
 		result.y = sourceCell.y + 1;
-		if (result.y % 2 == 0) {
+		if (sourceCell.y % 2 == 0) {
 			result.x = sourceCell.x;
 		}
 		else {
@@ -268,7 +268,7 @@ void Game::InitializeTerrainMatrix() {
 
 void Game::PlacePlayerArmyOnTerrainMatrix(const Hero& hero) {
 	// Layout the armies of the two players on game map/matrix
-	for (auto count = 0; count < hero.angajati; ++count) {
+	for (auto count = 0; count < hero.army_slots.size(); ++count) {
 		teren[hero.army_slots[count]->x][hero.army_slots[count]->y] =
 			10 + hero.player_id * 10 + count;
 	}
