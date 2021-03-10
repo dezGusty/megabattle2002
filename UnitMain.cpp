@@ -1,16 +1,13 @@
 //---------------------------------------------------------------------------
 #include <vcl.h>
 #pragma hdrstop
-//constante directii
-#define STGSUS 0
-#define STG    1
-#define STGJOS 2
-#define DRPJOS 3
-#define DRP    4
-#define DRPSUS 5
 //constante control
 #define COMPUTER 1
 #define HUMAN 0
+
+// C/C++ includes
+#include <string>
+#include <sstream>
 
 // Other includes in this project.
 #include "src/terrain_type.h"
@@ -119,6 +116,28 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 						UnMesaj->ShowModal();
 						delete UnMesaj;
 					}
+					else {
+						// Show path?
+						//todo:xxx
+
+						TargetX = ax;
+						TargetY = ay;
+						PathwasFound = false;
+						int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
+
+						PathFinding(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+						Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt, 0);
+
+std::stringstream ss;
+						for (int i = 1; i <= mt; i++) {
+							// show hex
+							RenderSingleHex(Canvas, path[i].x, path[i].y, 2);
+							ss << "- " << path[i].x << ", " << path[i].y << std::endl;
+
+						}
+						Canvas->TextOut(800, 25, ss.str().c_str());
+
+                    }
 				}
 		}
 	}
@@ -136,8 +155,9 @@ void __fastcall TBattleForm::FormMouseMove(TObject *Sender, TShiftState Shift,
 			switch (game.selected[fx][fy]) {
 			case 1:
 				if (MouseSelectX != fx || MouseSelectY != fy) {
-					if (MouseSelectX != -84)
+					if (MouseSelectX != -84) {
 						DesenHexCopy(MouseSelectX, MouseSelectY, 2);
+					}
 					MouseSelectX = fx;
 					MouseSelectY = fy;
 					RenderSingleHex(Canvas, MouseSelectX, MouseSelectY, 4);
@@ -254,6 +274,11 @@ void TBattleForm::LoadBattleBackgroundPictureForType(TerrainType terrain_type) {
 			ImagineTeren->Picture->LoadFromFile("./img/cloudy-dirt.bmp");
 		}
 		break;
+	case TerrainType::PurePink:
+		if (doesFileExist("./img/pink.bmp")){
+			ImagineTeren->Picture->LoadFromFile("./img/pink.bmp");
+		}
+		break;
 	}
 }
 
@@ -278,11 +303,29 @@ void TBattleForm::RenderBorderAndBackground() {
 // ---------------------------------------------------------------------------
 void TBattleForm::RenderSingleHex(TCanvas *UnCanvas, int cell_x, int cell_y,
 	int fel) {
-	if (cell_y % 2 == 0) {
-		ImagHex->Draw(UnCanvas, 20 + 80*cell_x, 100 + 60*cell_y, fel, true);
+
+	auto cell_width = 80;
+	auto cell_height = 60;
+	auto output_coord_x = 20 + cell_width * cell_x;
+	auto output_coord_y = 100 + cell_height * cell_y;
+	auto x_axis_correction = 0;
+
+	if (cell_y % 2 == 1) {
+		x_axis_correction = 40;
 	}
-	else {
-		ImagHex->Draw(UnCanvas, 60 + 80*cell_x, 100 + 60*cell_y, fel, true);
+
+	ImagHex->Draw(UnCanvas, x_axis_correction + output_coord_x, output_coord_y,
+		fel, true);
+
+	if (game.ShowDebugIndices) {
+		std::stringstream ss;
+		ss << cell_x << ", " << cell_y;
+		std::string coord_text = ss.str();
+
+		UnCanvas->TextOut(
+			x_axis_correction + output_coord_x + cell_width / 2,
+			output_coord_y + cell_height / 2,
+			coord_text.c_str());
 	}
 }
 
@@ -493,28 +536,28 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 		int aok = 0;
 		if (moveCell.y > ty) {
 			if (moveCell.x > tx) {
-				if (game.IsNeighbourTerrainAvailable(moveCell, STGSUS)) {
-					moveCell = game.GetNeighbourCell(moveCell, STGSUS);
+				if (game.IsNeighbourTerrainAvailable(moveCell, TOPLEFT)) {
+					moveCell = game.GetNeighbourCell(moveCell, TOPLEFT);
 					aok = 1;
 				}
 			}
 			else {
-				if (game.IsNeighbourTerrainAvailable(moveCell, DRPSUS)) {
-					moveCell = game.GetNeighbourCell(moveCell, DRPSUS);
+				if (game.IsNeighbourTerrainAvailable(moveCell, TOPRIGHT)) {
+					moveCell = game.GetNeighbourCell(moveCell, TOPRIGHT);
 					aok = 1;
 				}
 			}
 		}
 		if (!aok && moveCell.y == ty) {
 			if (moveCell.x > tx) {
-				if (game.IsNeighbourTerrainAvailable(moveCell, STG)) {
-					moveCell = game.GetNeighbourCell(moveCell, STG);
+				if (game.IsNeighbourTerrainAvailable(moveCell, LEFT)) {
+					moveCell = game.GetNeighbourCell(moveCell, LEFT);
 					aok = 1;
 				}
 			}
 			else {
-				if (game.IsNeighbourTerrainAvailable(moveCell, DRP)) {
-					moveCell = game.GetNeighbourCell(moveCell, DRP);
+				if (game.IsNeighbourTerrainAvailable(moveCell, RIGHT)) {
+					moveCell = game.GetNeighbourCell(moveCell, RIGHT);
 					aok = 1;
 				}
 			}
@@ -522,14 +565,14 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 
 		if (!aok && moveCell.y < ty) {
 			if (moveCell.x > tx) {
-				if (game.IsNeighbourTerrainAvailable(moveCell, STGJOS)) {
-					moveCell = game.GetNeighbourCell(moveCell, STGJOS);
+				if (game.IsNeighbourTerrainAvailable(moveCell, BOTLEFT)) {
+					moveCell = game.GetNeighbourCell(moveCell, BOTLEFT);
 					aok = 1;
 				}
 			}
 			else {
-				if (game.IsNeighbourTerrainAvailable(moveCell, DRPJOS)) {
-					moveCell = game.GetNeighbourCell(moveCell, DRPJOS);
+				if (game.IsNeighbourTerrainAvailable(moveCell, BOTRIGHT)) {
+					moveCell = game.GetNeighbourCell(moveCell, BOTRIGHT);
 					aok = 1;
 				}
 			}
@@ -555,8 +598,10 @@ void TBattleForm::AtacNormal(int tintax, int tintay) {
 	TargetY = tintay;
 	PathwasFound = false;
 	int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
+
 	PathFinding(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt, 0);
+
 	StergeHexuriSelectate();
 	for (int i = 1; i <= mt; i++) {
 		if (TargetX == path[i].x && TargetY == path[i].y)
@@ -587,32 +632,26 @@ void TBattleForm::DesenHexCopy(int x, int y, int fel) {
 		_PuneUnitate(CanvasFundal, x, y - 2); // desen sus sus
 	}
 
-    //TODO:XXX ax,ay
-
-	if (game.DoesNeighbourExist(Coord {x, y}, STGSUS)) {
-		int ax = GetX(x, y, STGSUS);
-		int ay = GetY(x, y, STGSUS);
-		_PuneUnitate(CanvasFundal, ax, ay);
+	if (game.DoesNeighbourExist(Coord {x, y}, TOPLEFT)) {
+		Coord neigh = game.GetNeighbourCell({x, y}, TOPLEFT);
+		_PuneUnitate(CanvasFundal, neigh.x, neigh.y);
 	}
 
-	if (game.DoesNeighbourExist(Coord {x, y}, DRPSUS)) {
-		int ax = GetX(x, y, DRPSUS);
-		int ay = GetY(x, y, DRPSUS);
-		_PuneUnitate(CanvasFundal, ax, ay);
+	if (game.DoesNeighbourExist(Coord {x, y}, TOPRIGHT)) {
+		Coord neigh = game.GetNeighbourCell({x, y}, TOPRIGHT);
+		_PuneUnitate(CanvasFundal, neigh.x, neigh.y);
 	}
 
 	_PuneUnitate(CanvasFundal, x, y);
 
-	if (game.DoesNeighbourExist(Coord {x, y}, STGJOS)) {
-		int ax = GetX(x, y, STGJOS);
-		int ay = GetY(x, y, STGJOS);
-		_PuneUnitate(CanvasFundal, ax, ay);
+	if (game.DoesNeighbourExist(Coord {x, y}, BOTLEFT)) {
+		Coord neigh = game.GetNeighbourCell({x, y}, BOTLEFT);
+		_PuneUnitate(CanvasFundal, neigh.x, neigh.y);
 	}
 
-	if (game.DoesNeighbourExist(Coord {x, y}, DRPJOS)) {
-		int ax = GetX(x, y, DRPJOS);
-		int ay = GetY(x, y, DRPJOS);
-		_PuneUnitate(CanvasFundal, ax, ay);
+	if (game.DoesNeighbourExist(Coord {x, y}, BOTRIGHT)) {
+		Coord neigh = game.GetNeighbourCell({x, y}, BOTRIGHT);
+		_PuneUnitate(CanvasFundal, neigh.x, neigh.y);
 	}
 
 	if (y < 5) {
@@ -782,63 +821,6 @@ inline int TBattleForm::GetPosY(int mx, int my) {
 	return ret;
 }
 
-//---------------------------------------------------------------------------
-inline int TBattleForm::GetX(int x, int y, int dir) {
-	int ret = 0;
-	switch (dir) {
-	case STGSUS:
-		if (y % 2 == 1)
-			ret = x;
-		else
-			ret = x - 1;
-		break;
-	case STG:
-		ret = x - 1;
-		break;
-	case STGJOS:
-		if (y % 2 == 1)
-			ret = x;
-		else
-			ret = x - 1;
-		break;
-	case DRPJOS:
-		if (y % 2 == 0)
-			ret = x;
-		else
-			ret = x + 1;
-		break;
-	case DRP:
-		ret = x + 1;
-		break;
-	case DRPSUS:
-		if (y % 2 == 0)
-			ret = x;
-		else
-			ret = x + 1;
-		break;
-	}
-	return ret;
-}
-
-//---------------------------------------------------------------------------
-inline int TBattleForm::GetY(int x, int y, int dir) {
-	int ret = 0;
-	switch (dir) {
-	case STGSUS:
-	case DRPSUS:
-		ret = y - 1;
-		break;
-	case DRP:
-	case STG:
-		ret = y;
-		break;
-	case STGJOS:
-	case DRPJOS:
-		ret = y + 1;
-		break;
-	}
-	return ret;
-}
 
 //---------------------------------------------------------------------------
 void TBattleForm::IntraInJoc() {
@@ -944,8 +926,10 @@ inline void TBattleForm::Muta(int newx, int newy) {
 	TargetY = newy;
 	PathwasFound = false;
 	int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
+
 	PathFinding(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt, 0);
+
 	StergeHexuriSelectate();
 	for (int i = 1; i <= mt; i++) {
 		MutaUnitate(path[i].x, path[i].y);
@@ -980,173 +964,180 @@ void TBattleForm::OrdinSkipTurn() {
 
 // ---------------------------------------------------------------------------
 inline void TBattleForm::PathFinding(int x, int y, int mut, int pas) {
-	if (!PathwasFound)
-		if (pas <= mut) {
-			path[pas].x = x;
-			path[pas].y = y;
-			if (TargetX == x && TargetY == y)
-				PathwasFound = true;
-			else if ((game.teren[x][y] == 0) ||
-				(Player[SelectedPlayer]->army_slots[SelectedSlot]
-				->x == x && Player[SelectedPlayer]->army_slots[SelectedSlot]
-				->y == y)) {
-				int ordin[6] = {STGSUS, DRPSUS, STG, DRP, STGJOS, DRPJOS};
-                 // prioritate sus
-				if (y > TargetY) {
-					 // prior stg
-					 if (x > TargetX) {
-						 if (x - TargetX > y - TargetY) {
-							 ordin[0] = STGSUS;
-							 ordin[1] = STG;
-							 ordin[2] = STGJOS;
-							 ordin[3] = DRPSUS;
-							 ordin[4] = DRP;
-							 ordin[5] = DRPJOS;
-						 }
-						 else {
-							 ordin[0] = STGSUS;
-							 ordin[1] = DRPSUS;
-							 ordin[2] = STG;
-							 ordin[3] = DRP;
-							 ordin[4] = STGJOS;
-							 ordin[5] = DRPJOS;
-						 }
-					 }
-					 // prior drp
-					 if (x < TargetX) {
-						 if (TargetX - x > y - TargetY) {
-							 ordin[0] = DRPSUS;
-							 ordin[1] = DRP;
-							 ordin[2] = DRPJOS;
-							 ordin[3] = STGSUS;
-							 ordin[4] = STG;
-							 ordin[5] = STGJOS;
-						 }
-						 else {
-							 ordin[0] = DRPSUS;
-							 ordin[1] = STGSUS;
-							 ordin[2] = DRP;
-							 ordin[3] = STG;
-							 ordin[4] = DRPJOS;
-							 ordin[5] = STGJOS;
-						 }
-					 }
-					 // prior sus
-					 if (x == TargetX) {
-						 if (y % 2 == 0) {
-							 // drpsus
-							 ordin[0] = DRPSUS;
-							 ordin[1] = DRP;
-							 ordin[2] = DRPJOS;
-							 ordin[3] = STGSUS;
-							 ordin[4] = STG;
-							 ordin[5] = STGJOS;
-						 }
-						 else {
-							 // stgsus
-							 ordin[0] = STGSUS;
-							 ordin[1] = STG;
-							 ordin[2] = STGJOS;
-							 ordin[3] = DRPSUS;
-							 ordin[4] = DRP;
-							 ordin[5] = DRPJOS;
-						 }
-					 }
-				 }
+	if (PathwasFound) {
+		return;
+	}
 
-				if (y == TargetY) // prioritate oriz
-				{
-					if (x > TargetX) // prior stg
-					{
-						ordin[0] = STG;
-						ordin[1] = DRP;
-						ordin[2] = STGSUS;
-						ordin[3] = STGJOS;
-						ordin[4] = DRPJOS;
-						ordin[5] = DRPSUS;
-					}
-					if (x < TargetX) // prior drp
-					{
-						ordin[0] = DRP;
-						ordin[1] = STG;
-						ordin[2] = DRPSUS;
-						ordin[3] = DRPJOS;
-						ordin[4] = STGJOS;
-						ordin[5] = STGSUS;
-					}
+	if (pas > mut) {
+		return;
+	}
+
+	path[pas].x = x;
+	path[pas].y = y;
+	if (TargetX == x && TargetY == y)
+		PathwasFound = true;
+	else if ((game.teren[x][y] == 0) ||
+		(Player[SelectedPlayer]->army_slots[SelectedSlot]->x == x && Player
+		[SelectedPlayer]->army_slots[SelectedSlot]->y == y)) {
+		// prioritise going up
+		int ordin[6] = {TOPLEFT, TOPRIGHT, LEFT, RIGHT, BOTLEFT, BOTRIGHT};
+		if (y > TargetY) {
+			// prioritize going left
+			if (x > TargetX) {
+				if (x - TargetX > y - TargetY) {
+					ordin[0] = TOPLEFT;
+					ordin[1] = LEFT;
+					ordin[2] = BOTLEFT;
+					ordin[3] = TOPRIGHT;
+					ordin[4] = RIGHT;
+					ordin[5] = BOTRIGHT;
 				}
-				if (y < TargetY) // prioritate jos
-				{
-					// prior stg
-					if (x > TargetX) {
-						if (TargetY - y >= x - TargetX) {
-							ordin[0] = STGJOS;
-							ordin[1] = DRPJOS;
-							ordin[2] = STG;
-							ordin[3] = DRP;
-							ordin[4] = STGSUS;
-							ordin[5] = DRPSUS;
-						}
-						else {
-							ordin[0] = STGJOS;
-							ordin[1] = STG;
-							ordin[2] = STGSUS;
-							ordin[3] = DRPJOS;
-							ordin[4] = DRP;
-							ordin[5] = DRPSUS;
-						}
-					}
-
-					// prior drp
-					if (x <= TargetX) {
-						if (TargetY - y >= TargetX - x) {
-							ordin[0] = DRPJOS;
-							ordin[1] = STGJOS;
-							ordin[2] = DRP;
-							ordin[3] = STG;
-							ordin[4] = STGJOS;
-							ordin[5] = STGSUS;
-						}
-						else {
-							ordin[0] = DRPJOS;
-							ordin[1] = DRP;
-							ordin[2] = DRPSUS;
-							ordin[3] = STGJOS;
-							ordin[4] = STG;
-							ordin[5] = STGSUS;
-						}
-					}
-
-					// drpjos
-					if (x == TargetX) {
-						if (y % 2 == 0) {
-							ordin[0] = DRPJOS;
-							ordin[1] = STGJOS;
-							ordin[2] = DRP;
-							ordin[3] = STG;
-							ordin[4] = STGJOS;
-							ordin[5] = STGSUS;
-						}
-						else // stgjos
-						{
-							ordin[0] = STGJOS;
-							ordin[1] = DRPJOS;
-							ordin[2] = STG;
-							ordin[3] = DRP;
-							ordin[4] = STGSUS;
-							ordin[5] = DRPSUS;
-						}
-					}
+				else {
+					ordin[0] = TOPLEFT;
+					ordin[1] = TOPRIGHT;
+					ordin[2] = LEFT;
+					ordin[3] = RIGHT;
+					ordin[4] = BOTLEFT;
+					ordin[5] = BOTRIGHT;
 				}
-				for (int k = 0; k <= 5; k++) {
-					int i = ordin[k];
-					if (game.DoesNeighbourExist({x, y}, i)) {
-						Coord nextCell = game.GetNeighbourCell({x, y}, i);
-						PathFinding(nextCell.x, nextCell.y, mut, pas + 1);
-					}
+			}
+			// prior drp
+			if (x < TargetX) {
+				if (TargetX - x > y - TargetY) {
+					ordin[0] = TOPRIGHT;
+					ordin[1] = RIGHT;
+					ordin[2] = BOTRIGHT;
+					ordin[3] = TOPLEFT;
+					ordin[4] = LEFT;
+					ordin[5] = BOTLEFT;
+				}
+				else {
+					ordin[0] = TOPRIGHT;
+					ordin[1] = TOPLEFT;
+					ordin[2] = RIGHT;
+					ordin[3] = LEFT;
+					ordin[4] = BOTRIGHT;
+					ordin[5] = BOTLEFT;
+				}
+			}
+			// prior sus
+			if (x == TargetX) {
+				if (y % 2 == 0) {
+					// TOPRIGHT
+					ordin[0] = TOPRIGHT;
+					ordin[1] = RIGHT;
+					ordin[2] = BOTRIGHT;
+					ordin[3] = TOPLEFT;
+					ordin[4] = LEFT;
+					ordin[5] = BOTLEFT;
+				}
+				else {
+					// TOPLEFT
+					ordin[0] = TOPLEFT;
+					ordin[1] = LEFT;
+					ordin[2] = BOTLEFT;
+					ordin[3] = TOPRIGHT;
+					ordin[4] = RIGHT;
+					ordin[5] = BOTRIGHT;
 				}
 			}
 		}
+
+		if (y == TargetY) // prioritate oriz
+		{
+			if (x > TargetX) // prior stg
+			{
+				ordin[0] = LEFT;
+				ordin[1] = RIGHT;
+				ordin[2] = TOPLEFT;
+				ordin[3] = BOTLEFT;
+				ordin[4] = BOTRIGHT;
+				ordin[5] = TOPRIGHT;
+			}
+			if (x < TargetX) // prior drp
+			{
+				ordin[0] = RIGHT;
+				ordin[1] = LEFT;
+				ordin[2] = TOPRIGHT;
+				ordin[3] = BOTRIGHT;
+				ordin[4] = BOTLEFT;
+				ordin[5] = TOPLEFT;
+			}
+		}
+
+		if (y < TargetY) // prioritate jos
+		{
+			// prior stg
+			if (x > TargetX) {
+				if (TargetY - y >= x - TargetX) {
+					ordin[0] = BOTLEFT;
+					ordin[1] = BOTRIGHT;
+					ordin[2] = LEFT;
+					ordin[3] = RIGHT;
+					ordin[4] = TOPLEFT;
+					ordin[5] = TOPRIGHT;
+				}
+				else {
+					ordin[0] = BOTLEFT;
+					ordin[1] = LEFT;
+					ordin[2] = TOPLEFT;
+					ordin[3] = BOTRIGHT;
+					ordin[4] = RIGHT;
+					ordin[5] = TOPRIGHT;
+				}
+			}
+
+			// prior drp
+			if (x <= TargetX) {
+				// prioritize bottom over right
+				if (TargetY - y >= TargetX - x) {
+					ordin[0] = BOTRIGHT;
+					ordin[1] = BOTLEFT;
+					ordin[2] = RIGHT;
+					ordin[3] = LEFT;
+					ordin[4] = TOPRIGHT;
+					ordin[5] = TOPLEFT;
+				}
+				else {
+					ordin[0] = BOTRIGHT;
+					ordin[1] = RIGHT;
+					ordin[2] = TOPRIGHT;
+					ordin[3] = BOTLEFT;
+					ordin[4] = LEFT;
+					ordin[5] = TOPLEFT;
+				}
+			}
+
+			// up or down
+			if (x == TargetX) {
+				if (y % 2 == 0) {
+					ordin[0] = BOTRIGHT;
+					ordin[1] = BOTLEFT;
+					ordin[2] = RIGHT;
+					ordin[3] = LEFT;
+					ordin[4] = TOPRIGHT;
+					ordin[5] = TOPLEFT;
+				}
+				else // BOTLEFT
+				{
+					ordin[0] = BOTLEFT;
+					ordin[1] = BOTRIGHT;
+					ordin[2] = LEFT;
+					ordin[3] = RIGHT;
+					ordin[4] = TOPLEFT;
+					ordin[5] = TOPRIGHT;
+				}
+			}
+		}
+		for (int k = 0; k <= 5; k++) {
+			int i = ordin[k];
+			if (game.DoesNeighbourExist({x, y}, i)) {
+				Coord nextCell = game.GetNeighbourCell({x, y}, i);
+				PathFinding(nextCell.x, nextCell.y, mut, pas + 1);
+			}
+		}
+	}
+
 }
 
 void DeplhiPlaySound(TMediaPlayer* player) {
@@ -1198,21 +1189,21 @@ inline void TBattleForm::Selecteaza(int x, int y, bool ShowPlayer, int felhex) {
 		_PuneUnitate(CanvasFundal, x, y - 2);
 	}
 
-	if (game.DoesNeighbourExist({x, y}, STGSUS)) {
-		int ax = GetX(x, y, STGSUS);
-		int ay = GetY(x, y, STGSUS);
-		_PuneUnitate(CanvasFundal, ax, ay);
+	if (game.DoesNeighbourExist({x, y}, TOPLEFT)) {
+		Coord neigh = game.GetNeighbourCell({x, y}, TOPLEFT);
+		_PuneUnitate(CanvasFundal, neigh.x, neigh.y);
 	}
 
-	if (game.DoesNeighbourExist({x, y}, DRPSUS)) {
-		int ax = GetX(x, y, DRPSUS);
-		int ay = GetY(x, y, DRPSUS);
-		_PuneUnitate(CanvasFundal, ax, ay);
+	if (game.DoesNeighbourExist({x, y}, TOPRIGHT)) {
+		Coord neigh = game.GetNeighbourCell({x, y}, TOPRIGHT);
+		_PuneUnitate(CanvasFundal, neigh.x, neigh.y);
 	}
+
 	// desen hex
 	if (game.ShowHexes || felhex == 1 || felhex == 3 || felhex == 4) {
 		RenderSingleHex(CanvasFundal, x, y, felhex);
 	}
+
 	if (!ShowPlayer && game.teren[x][y]) { // _DesenHex(CanvasFundal,x,y,4);
 	}
 	// desen unitate
@@ -1220,16 +1211,14 @@ inline void TBattleForm::Selecteaza(int x, int y, bool ShowPlayer, int felhex) {
 		SoldierDraw(*Player[juc]->army_slots[lot], ImagUnit, CanvasFundal);
 	}
 
-	if (game.DoesNeighbourExist({x, y}, STGJOS)) {
-		int ax = GetX(x, y, STGJOS);
-		int ay = GetY(x, y, STGJOS);
-		_PuneUnitate(CanvasFundal, ax, ay);
+	if (game.DoesNeighbourExist({x, y}, BOTLEFT)) {
+		Coord neigh = game.GetNeighbourCell({x, y}, BOTLEFT);
+		_PuneUnitate(CanvasFundal, neigh.x, neigh.y);
 	}
 
-	if (game.DoesNeighbourExist(Coord {x, y}, DRPJOS)) {
-		int ax = GetX(x, y, DRPJOS);
-		int ay = GetY(x, y, DRPJOS);
-		_PuneUnitate(CanvasFundal, ax, ay);
+	if (game.DoesNeighbourExist(Coord {x, y}, BOTRIGHT)) {
+		Coord neigh = game.GetNeighbourCell({x, y}, BOTRIGHT);
+		_PuneUnitate(CanvasFundal, neigh.x, neigh.y);
 	}
 
 	// desen fig jos jos
@@ -1332,21 +1321,20 @@ inline void TBattleForm::SeteazaHex(int x, int y, int mut) {
 	if (mut <= 0) {
 		return;
 	}
-	for (int i = STGSUS; i <= DRPSUS; i++) {
-		if (game.DoesNeighbourExist(Coord {x, y}, i)) {
-			int ax = GetX(x, y, i);
-			int ay = GetY(x, y, i);
-			if (game.teren[ax][ay]) {
-				if (game.teren[ax][ay] / 20 != SelectedPlayer) {
-					game.selected[ax][ay] = 2;
+	for (int direction = TOPLEFT; direction <= TOPRIGHT; direction++) {
+		if (game.DoesNeighbourExist(Coord {x, y}, direction)) {
+			Coord hex_cell = game.GetNeighbourCell(Coord{x,y}, direction);
+			if (game.teren[hex_cell.x][hex_cell.y]) {
+				if (game.teren[hex_cell.x][hex_cell.y] / 20 != SelectedPlayer) {
+					game.selected[hex_cell.x][hex_cell.y] = 2;
 				}
 				else {
-					game.selected[ax][ay] = 0;
+					game.selected[hex_cell.x][hex_cell.y] = 0;
 				}
 			}
 			else {
-				game.selected[ax][ay] = 1;
-				SeteazaHex2(ax, ay, mut - 1, i);
+				game.selected[hex_cell.x][hex_cell.y] = 1;
+				SeteazaHex2(hex_cell.x, hex_cell.y, mut - 1, direction);
 			}
 		}
 	}
@@ -1357,22 +1345,21 @@ inline void TBattleForm::SeteazaHex2(int x, int y, int mut, int exdir) {
 	if (mut <= 0) {
 		return;
 	}
-	for (int i = STGSUS; i <= DRPSUS; i++) {
+	for (int i = TOPLEFT; i <= TOPRIGHT; i++) {
 		if (i != (exdir + 3) % 6) {
 			if (game.DoesNeighbourExist(Coord {x, y}, i)) {
-				int ax = GetX(x, y, i);
-				int ay = GetY(x, y, i);
-				if (game.teren[ax][ay]) {
-					if (game.teren[ax][ay] / 20 != SelectedPlayer) {
-						game.selected[ax][ay] = 2;
+				Coord hex_cell = game.GetNeighbourCell(Coord{x,y}, i);
+				if (game.teren[hex_cell.x][hex_cell.y]) {
+					if (game.teren[hex_cell.x][hex_cell.y] / 20 != SelectedPlayer) {
+						game.selected[hex_cell.x][hex_cell.y] = 2;
 					}
 					else {
-						game.selected[ax][ay] = 0;
+						game.selected[hex_cell.x][hex_cell.y] = 0;
 					}
 				}
 				else {
-					game.selected[ax][ay] = 1;
-					SeteazaHex2(ax, ay, mut - 1, i);
+					game.selected[hex_cell.x][hex_cell.y] = 1;
+					SeteazaHex2(hex_cell.x, hex_cell.y, mut - 1, i);
 				}
 			}
 		}

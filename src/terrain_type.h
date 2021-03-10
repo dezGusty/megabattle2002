@@ -1,5 +1,5 @@
 #pragma once
 
 enum class TerrainType {
-	GrassPlains = 1, Dirt = 2
+	PurePink = 0, GrassPlains = 1, Dirt = 2
 };

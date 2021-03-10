@@ -40,6 +40,13 @@ bool Game::LoadBattleIniFile() {
 	std::string str_show_hexes = ini.get("battle").get("show_hexes");
 	ShowHexes = std::stoi (str_show_hexes,&sz);
 
+	//# Shows or hides the debug indices
+	//# values
+	//#   0: don't show indices
+	//#   1: show indices
+	std::string str_show_dbg_indices = ini.get("battle").get("show_debug_indices");
+	ShowDebugIndices = std::stoi (str_show_dbg_indices,&sz);
+
 	//# Opponent type (right side player can be either human of CPU controlled; left side player is always HUMAN controlled)
 	//# values
 	//#   0: HUMAN
@@ -286,4 +293,182 @@ void Game::ResetSelectionMatrix(){
 			selected[i][j] = 0;
 		}
 	}
+}
+
+
+// ---------------------------------------------------------------------------
+void Game::PathFinding(int x, int y, int mut, int pas) {
+//	if (PathwasFound) {
+//		return;
+//	}
+//
+//	if (pas > mut) {
+//		return;
+//	}
+//
+//	path[pas].x = x;
+//	path[pas].y = y;
+//	if (TargetX == x && TargetY == y)
+//		PathwasFound = true;
+//	else if ((game.teren[x][y] == 0) ||
+//		(Player[SelectedPlayer]->army_slots[SelectedSlot]->x == x && Player
+//		[SelectedPlayer]->army_slots[SelectedSlot]->y == y)) {
+//		// prioritise going up
+//		int ordin[6] = {TOPLEFT, TOPRIGHT, LEFT, RIGHT, BOTLEFT, BOTRIGHT};
+//		if (y > TargetY) {
+//			// prioritize going left
+//			if (x > TargetX) {
+//				if (x - TargetX > y - TargetY) {
+//					ordin[0] = TOPLEFT;
+//					ordin[1] = LEFT;
+//					ordin[2] = BOTLEFT;
+//					ordin[3] = TOPRIGHT;
+//					ordin[4] = RIGHT;
+//					ordin[5] = BOTRIGHT;
+//				}
+//				else {
+//					ordin[0] = TOPLEFT;
+//					ordin[1] = TOPRIGHT;
+//					ordin[2] = LEFT;
+//					ordin[3] = RIGHT;
+//					ordin[4] = BOTLEFT;
+//					ordin[5] = BOTRIGHT;
+//				}
+//			}
+//			// prior drp
+//			if (x < TargetX) {
+//				if (TargetX - x > y - TargetY) {
+//					ordin[0] = TOPRIGHT;
+//					ordin[1] = RIGHT;
+//					ordin[2] = BOTRIGHT;
+//					ordin[3] = TOPLEFT;
+//					ordin[4] = LEFT;
+//					ordin[5] = BOTLEFT;
+//				}
+//				else {
+//					ordin[0] = TOPRIGHT;
+//					ordin[1] = TOPLEFT;
+//					ordin[2] = RIGHT;
+//					ordin[3] = LEFT;
+//					ordin[4] = BOTRIGHT;
+//					ordin[5] = BOTLEFT;
+//				}
+//			}
+//			// prior sus
+//			if (x == TargetX) {
+//				if (y % 2 == 0) {
+//					// TOPRIGHT
+//					ordin[0] = TOPRIGHT;
+//					ordin[1] = RIGHT;
+//					ordin[2] = BOTRIGHT;
+//					ordin[3] = TOPLEFT;
+//					ordin[4] = LEFT;
+//					ordin[5] = BOTLEFT;
+//				}
+//				else {
+//					// TOPLEFT
+//					ordin[0] = TOPLEFT;
+//					ordin[1] = LEFT;
+//					ordin[2] = BOTLEFT;
+//					ordin[3] = TOPRIGHT;
+//					ordin[4] = RIGHT;
+//					ordin[5] = BOTRIGHT;
+//				}
+//			}
+//		}
+//
+//		if (y == TargetY) // prioritate oriz
+//		{
+//			if (x > TargetX) // prior stg
+//			{
+//				ordin[0] = LEFT;
+//				ordin[1] = RIGHT;
+//				ordin[2] = TOPLEFT;
+//				ordin[3] = BOTLEFT;
+//				ordin[4] = BOTRIGHT;
+//				ordin[5] = TOPRIGHT;
+//			}
+//			if (x < TargetX) // prior drp
+//			{
+//				ordin[0] = RIGHT;
+//				ordin[1] = LEFT;
+//				ordin[2] = TOPRIGHT;
+//				ordin[3] = BOTRIGHT;
+//				ordin[4] = BOTLEFT;
+//				ordin[5] = TOPLEFT;
+//			}
+//		}
+//
+//		if (y < TargetY) // prioritate jos
+//		{
+//			// prior stg
+//			if (x > TargetX) {
+//				if (TargetY - y >= x - TargetX) {
+//					ordin[0] = BOTLEFT;
+//					ordin[1] = BOTRIGHT;
+//					ordin[2] = LEFT;
+//					ordin[3] = RIGHT;
+//					ordin[4] = TOPLEFT;
+//					ordin[5] = TOPRIGHT;
+//				}
+//				else {
+//					ordin[0] = BOTLEFT;
+//					ordin[1] = LEFT;
+//					ordin[2] = TOPLEFT;
+//					ordin[3] = BOTRIGHT;
+//					ordin[4] = RIGHT;
+//					ordin[5] = TOPRIGHT;
+//				}
+//			}
+//
+//			// prior drp
+//			if (x <= TargetX) {
+//				if (TargetY - y >= TargetX - x) {
+//					ordin[0] = BOTRIGHT;
+//					ordin[1] = BOTLEFT;
+//					ordin[2] = RIGHT;
+//					ordin[3] = LEFT;
+//					ordin[4] = BOTLEFT;
+//					ordin[5] = TOPLEFT;
+//				}
+//				else {
+//					ordin[0] = BOTRIGHT;
+//					ordin[1] = RIGHT;
+//					ordin[2] = TOPRIGHT;
+//					ordin[3] = BOTLEFT;
+//					ordin[4] = LEFT;
+//					ordin[5] = TOPLEFT;
+//				}
+//			}
+//
+//			// BOTRIGHT
+//			if (x == TargetX) {
+//				if (y % 2 == 0) {
+//					ordin[0] = BOTRIGHT;
+//					ordin[1] = BOTLEFT;
+//					ordin[2] = RIGHT;
+//					ordin[3] = LEFT;
+//					ordin[4] = BOTLEFT;
+//					ordin[5] = TOPLEFT;
+//				}
+//				else // BOTLEFT
+//				{
+//					ordin[0] = BOTLEFT;
+//					ordin[1] = BOTRIGHT;
+//					ordin[2] = LEFT;
+//					ordin[3] = RIGHT;
+//					ordin[4] = TOPLEFT;
+//					ordin[5] = TOPRIGHT;
+//				}
+//			}
+//		}
+//		for (int k = 0; k <= 5; k++) {
+//			int i = ordin[k];
+//			if (game.DoesNeighbourExist({x, y}, i)) {
+//				Coord nextCell = game.GetNeighbourCell({x, y}, i);
+//				PathFinding(nextCell.x, nextCell.y, mut, pas + 1);
+//			}
+//		}
+//	}
+
 }

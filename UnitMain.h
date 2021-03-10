@@ -118,8 +118,8 @@ public:		// User declarations
 		bool ExistaCoord(int mx,int my);
 		int GetPosX(int mx,int my);
 		int GetPosY(int mx,int my);
-		int GetX(int x,int y,int dir);
-		int GetY(int x,int y,int dir);
+//		int GetX(int x,int y,int dir);
+//		int GetY(int x,int y,int dir);
 		void IntraInJoc();
 
 		void LoadBattleBackgroundPictureForType(TerrainType terrain_type);

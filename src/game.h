@@ -11,12 +11,8 @@ enum HexDirection {
 	Right = 4, TopRight = 5
 };
 
-#define STGSUS 0
 #define STG    1
-#define STGJOS 2
-#define DRPJOS 3
 #define DRP    4
-#define DRPSUS 5
 
 #define TOPLEFT  0
 #define LEFT     1
@@ -92,6 +88,7 @@ public:
 	std::string right_player_cfg_file;
 
 	bool ShowHexes;
+    bool ShowDebugIndices;
 
 	// Second player control (Human or CPU)
 	int control2;
@@ -113,4 +110,6 @@ public:
 
     void ResetSelectionMatrix();
 	void MarkCellForRangedAttack(unsigned cell_x, unsigned cell_y);
+
+    void PathFinding(int x, int y, int mut, int pas);
 };
