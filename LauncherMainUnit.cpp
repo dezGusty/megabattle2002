@@ -17,7 +17,7 @@
 TLauncherForm *LauncherForm;
 
 bool SaveBattleIniFile(std::string ini_file_name, bool show_hexes, bool cpu_control, int terrain_type,
-	std::string fisier1, std::string fisier2) {
+	std::string fisier1, std::string fisier2, bool show_debug_indices) {
 	// first, create a file instance
 	mINI::INIFile file(ini_file_name);
 
@@ -35,6 +35,11 @@ bool SaveBattleIniFile(std::string ini_file_name, bool show_hexes, bool cpu_cont
 	ss << static_cast<int>(show_hexes);
 	std::string value_show_hexes = ss.str();
 	ini["battle"]["show_hexes"] = value_show_hexes;
+	ss.str(std::string());
+
+    ss << static_cast<int>(show_debug_indices);
+	std::string value_show_debug_indices = ss.str();
+	ini["battle"]["show_debug_indices"] = value_show_debug_indices;
 	ss.str(std::string());
 
 	ss << static_cast<int>(cpu_control);
@@ -131,6 +136,20 @@ bool TLauncherForm::LoadIniFile(const std::string& file_name) {
 		// ignore?
 	}
 
+    //# Shows or hides the debug indices
+	//# values
+	//#   0: don't show indices
+	//#   1: show indices
+	std::string str_show_dbg_indices = ini.get("battle").get("show_debug_indices");
+	ShowDebugIndices = 1;
+	try {
+		if (str_show_dbg_indices.length() > 0){
+			ShowDebugIndices = std::stoi(str_show_dbg_indices, &sz);
+		}
+	} catch (...) {
+		// ignore?
+	}
+
 	// # Opponent type (right side player can be either human of CPU controlled; left side player is always HUMAN controlled)
 	// # values
 	// #   0: HUMAN
@@ -186,6 +205,7 @@ void __fastcall TLauncherForm::FormActivate(TObject *Sender) {
 	InitialGameDir = GetCurrentDir();
 	CheckBox1->Checked = control2;
 	CheckBox2->Checked = ShowHexes;
+    cbShowDebugIndices->Checked = ShowDebugIndices;
 	Edit1->Text = felteren;
 }
 
@@ -199,11 +219,13 @@ void TLauncherForm::ScrieINI() {
 	AnsiString text_value = Edit1->Text.c_str();
 	std::string str_terrain_type = text_value.c_str();
 
+	bool show_debug_indices = cbShowDebugIndices->Checked;
+
 	std::string::size_type sz;
 	int num_terrain_type = std::stoi(str_terrain_type, &sz);
 
 	SaveBattleIniFile("battle.ini", show_map_hexes, player_2_cpu_control,
-		num_terrain_type, fisier1, fisier2);
+		num_terrain_type, fisier1, fisier2, show_debug_indices);
 }
 
 /**
@@ -279,7 +301,7 @@ void __fastcall TLauncherForm::Edit1Change(TObject *Sender) {
 	std::string::size_type sz;
 	int num_terrain_type = std::stoi(str_terrain_type, &sz);
 
-	if (num_terrain_type < 1 || num_terrain_type > 2) {
+	if (num_terrain_type < 0 || num_terrain_type > 2) {
 		Edit1->Text = 1;
 	}
 
@@ -297,3 +319,9 @@ void __fastcall TLauncherForm::CheckBox1Click(TObject *Sender)
 	ScrieINI();
 }
 //---------------------------------------------------------------------------
+void __fastcall TLauncherForm::cbShowDebugIndicesClick(TObject *Sender)
+{
+    ScrieINI();
+}
+//---------------------------------------------------------------------------
+

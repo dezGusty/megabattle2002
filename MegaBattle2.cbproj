@@ -156,6 +156,9 @@
         <None Include="src\soldier.h">
             <BuildOrder>9</BuildOrder>
         </None>
+        <None Include="src\terrain_type.h">
+            <BuildOrder>18</BuildOrder>
+        </None>
         <CppCompile Include="UnitMain.cpp">
             <Form>BattleForm</Form>
             <FormType>dfm</FormType>

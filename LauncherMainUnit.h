@@ -31,6 +31,7 @@ __published:	// IDE-managed Components
         TUpDown *UpDown1;
         TStaticText *StaticText1;
         TCheckBox *CheckBox2;
+	TCheckBox *cbShowDebugIndices;
         void __fastcall ButtonCloseClick(TObject *Sender);
         void __fastcall ButtonLaunchClick(TObject *Sender);
         void __fastcall Timer1Timer(TObject *Sender);
@@ -41,12 +42,14 @@ __published:	// IDE-managed Components
         void __fastcall Edit1Change(TObject *Sender);
 	void __fastcall CheckBox2Click(TObject *Sender);
 	void __fastcall CheckBox1Click(TObject *Sender);
+	void __fastcall cbShowDebugIndicesClick(TObject *Sender);
 private:	// User declarations
         bool app_state_initialized;
 public:		// User declarations
 		TRect cpRect;
         int felteren;
-        int ShowHexes;
+		int ShowHexes;
+        int ShowDebugIndices;
         int control2;
 		std::string fisier1;
         std::string fisier2;
