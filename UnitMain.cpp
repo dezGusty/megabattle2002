@@ -8,6 +8,7 @@
 // C/C++ includes
 #include <string>
 #include <sstream>
+#include <vector>
 
 // Other includes in this project.
 #include "src/terrain_type.h"
@@ -117,17 +118,20 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 						delete UnMesaj;
 					}
 					else {
-						PathwasFound = false;
 						int mt =
 							Player[SelectedPlayer]->army_slots[SelectedSlot]
 							->MovesLeft;
 
+						bool pathWasFound = false;
 						PathFinding(
 							Coord {ax, ay},
+							Coord {Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+							Player[SelectedPlayer]->army_slots[SelectedSlot]->y},
 							Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
 							Player[SelectedPlayer]->army_slots[SelectedSlot]->y,
 							mt,
-							0);
+							0,
+							pathWasFound);
 
 						std::stringstream ss;
 						for (int i = 1; i <= mt; i++) {
@@ -589,19 +593,22 @@ void TBattleForm::AtacArcas(int tintax, int tintay) {
 	if (Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo > 0) {
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->Ammo--;
 		ExecutaAtac(tintax, tintay, true);
-		::Sleep(200);
+		::Sleep(100);
 		SelecteazaUrmator();
 	}
 }
 
 //---------------------------------------------------------------------------
 void TBattleForm::AtacNormal(int tintax, int tintay) {
-	PathwasFound = false;
 	int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
 
-	PathFinding(Coord {tintax, tintay
-	}, Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
-		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt, 0);
+	Coord source = { Player[SelectedPlayer]->army_slots[SelectedSlot]->x, Player[SelectedPlayer]->army_slots[SelectedSlot]->y };
+	bool pathWasFound = false;
+	PathFinding(
+		Coord {tintax, tintay}, 
+		source,
+		source.x,
+		source.y, mt, 0, pathWasFound);
 
 	StergeHexuriSelectate();
 	for (int i = 1; i <= mt; i++) {
@@ -611,11 +618,11 @@ void TBattleForm::AtacNormal(int tintax, int tintay) {
 		else {
 			MutaUnitate(path[i].x, path[i].y);
 		}
-		::Sleep(100);
+		::Sleep(75);
 	}
 	ExecutaAtac(tintax, tintay, false);
 	DesenHexuriSelectate();
-	::Sleep(150);
+	::Sleep(100);
 	SelecteazaUrmator();
 }
 
@@ -749,7 +756,7 @@ void TBattleForm::ExecutaAtac(int tx, int ty, bool range) {
 	// urmeaza retaliation
 	if (!range && Player[tjuc]->army_slots[tlot]->alive && Player[tjuc]
 		->army_slots[tlot]->Retal > 0) {
-		::Sleep(250);
+		::Sleep(150);
 		Player[tjuc]->army_slots[tlot]->Retal--;
 		k = random(100) + 1;
 		if (k <= Player[tjuc]->army_slots[tlot]->ChancesToHit) {
@@ -867,7 +874,7 @@ void TBattleForm::IntraInJoc() {
 	_CursoareInitializari();
 	_InitializariMatrice();
 	game.ResetSelectionMatrix();
-	_DesenUnitati();
+//	_DesenUnitati();
 
 	// display logo
 	CanvasFundal->Draw(50, 550, logoImage->Picture->Bitmap);
@@ -925,22 +932,23 @@ void TBattleForm::Joc() {
 
 //---------------------------------------------------------------------------
 inline void TBattleForm::Muta(int newx, int newy) {
-	PathwasFound = false;
 	int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
 
-	PathFinding(Coord {newx, newy},
-		Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
-		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt, 0);
+	bool pathWasFound = false;
+	Coord source {Player[SelectedPlayer]->army_slots[SelectedSlot]->x, Player[SelectedPlayer]->army_slots[SelectedSlot]->y};
+	PathFinding(Coord {newx, newy}, source,
+		source.x,
+		source.y, mt, 0, pathWasFound);
 
 	StergeHexuriSelectate();
 	for (int i = 1; i <= mt; i++) {
 		MutaUnitate(path[i].x, path[i].y);
 		if (newx == path[i].x && newy == path[i].y)
 			i = mt + 1;
-		::Sleep(100);
+		::Sleep(50);
 	}
 	DesenHexuriSelectate();
-	::Sleep(150);
+	::Sleep(100);
 	SelecteazaUrmator();
 }
 
@@ -965,8 +973,8 @@ void TBattleForm::OrdinSkipTurn() {
 }
 
 // ---------------------------------------------------------------------------
-inline void TBattleForm::PathFinding(Coord target, int x, int y, int mut, int pas) {
-	if (PathwasFound) {
+inline void TBattleForm::PathFinding(Coord target, Coord source, int x, int y, int mut, int pas, bool& pathWasFound) {
+	if (pathWasFound) {
 		return;
 	}
 
@@ -974,169 +982,138 @@ inline void TBattleForm::PathFinding(Coord target, int x, int y, int mut, int pa
 		return;
 	}
 
+	// default directions (and order in which to try them)
+	std::vector<int>directions_to_try = {TOPLEFT, LEFT, BOTLEFT, TOPRIGHT, RIGHT, BOTRIGHT};
+
+	// TODO:path is global?
+	if (target.x == x && target.y == y) {
+		path[pas].x = x;
+		path[pas].y = y;
+		pathWasFound = true;
+		return;
+	}
+
+	// if the terrain is occupied, you can't use it.
+	if (game.teren[x][y] != 0) {
+		// unless you are the one occupying it
+		if (x != source.x || y != source.y) {
+			return;
+		}
+	}
+
 	path[pas].x = x;
 	path[pas].y = y;
-	if (target.x == x && target.y == y)
-		PathwasFound = true;
-	else if ((game.teren[x][y] == 0) ||
-		(Player[SelectedPlayer]->army_slots[SelectedSlot]->x == x && Player
-		[SelectedPlayer]->army_slots[SelectedSlot]->y == y)) {
-		// prioritise going up
-		int ordin[6] = {TOPLEFT, TOPRIGHT, LEFT, RIGHT, BOTLEFT, BOTRIGHT};
-		if (y > target.y) {
-			// prioritize going left
-			if (x > target.x) {
-				if (x - target.x > y - target.y) {
-					ordin[0] = TOPLEFT;
-					ordin[1] = LEFT;
-					ordin[2] = BOTLEFT;
-					ordin[3] = TOPRIGHT;
-					ordin[4] = RIGHT;
-					ordin[5] = BOTRIGHT;
-				}
-				else {
-					ordin[0] = TOPLEFT;
-					ordin[1] = TOPRIGHT;
-					ordin[2] = LEFT;
-					ordin[3] = RIGHT;
-					ordin[4] = BOTLEFT;
-					ordin[5] = BOTRIGHT;
-				}
+
+	// Check how far we are from each target (x and y).
+	// The more sizeable difference can be used with priority.
+	int diff_x = abs(x - target.x);
+	int diff_y = abs(y - target.y);
+
+	// prioritize going up
+	if (y > target.y) {
+		// prioritize going up/left
+		if (x > target.x) {
+			if (diff_x > diff_y) {
+				directions_to_try = {
+					TOPLEFT, LEFT, BOTLEFT, TOPRIGHT, RIGHT, BOTRIGHT};
 			}
-			// prior drp
-			if (x < target.x) {
-				if (target.x - x > y - target.y) {
-					ordin[0] = TOPRIGHT;
-					ordin[1] = RIGHT;
-					ordin[2] = BOTRIGHT;
-					ordin[3] = TOPLEFT;
-					ordin[4] = LEFT;
-					ordin[5] = BOTLEFT;
-				}
-				else {
-					ordin[0] = TOPRIGHT;
-					ordin[1] = TOPLEFT;
-					ordin[2] = RIGHT;
-					ordin[3] = LEFT;
-					ordin[4] = BOTRIGHT;
-					ordin[5] = BOTLEFT;
-				}
+			else {
+				directions_to_try = {
+					TOPLEFT, TOPRIGHT, LEFT, RIGHT, BOTLEFT, BOTRIGHT};
 			}
-			// prior sus
-			if (x == target.x) {
-				if (y % 2 == 0) {
-					// TOPRIGHT
-					ordin[0] = TOPRIGHT;
-					ordin[1] = RIGHT;
-					ordin[2] = BOTRIGHT;
-					ordin[3] = TOPLEFT;
-					ordin[4] = LEFT;
-					ordin[5] = BOTLEFT;
-				}
-				else {
-					// TOPLEFT
-					ordin[0] = TOPLEFT;
-					ordin[1] = LEFT;
-					ordin[2] = BOTLEFT;
-					ordin[3] = TOPRIGHT;
-					ordin[4] = RIGHT;
-					ordin[5] = BOTRIGHT;
-				}
+		}
+		// prioritize going up/right
+		if (x < target.x) {
+			if (diff_x > diff_y) {
+				directions_to_try = {
+					TOPRIGHT, RIGHT, BOTRIGHT, TOPLEFT, LEFT, BOTLEFT};
+			}
+			else {
+				directions_to_try = {
+					TOPRIGHT, TOPLEFT, RIGHT, LEFT, BOTRIGHT, BOTLEFT};
+			}
+		}
+		// prioritize going up
+		if (x == target.x) {
+			if (y % 2 == 0) {
+				// TOPRIGHT
+				directions_to_try = {
+					TOPRIGHT, RIGHT, BOTRIGHT, TOPLEFT, LEFT, BOTLEFT};
+			}
+			else {
+				// TOPLEFT
+				directions_to_try = {
+					TOPLEFT, LEFT, BOTLEFT, TOPRIGHT, RIGHT, BOTRIGHT};
+			}
+		}
+	}
+
+	// prioritize left/right
+	if (y == target.y) {
+		// prioritize left
+		if (x > target.x) {
+			directions_to_try = {
+				LEFT, TOPLEFT, BOTLEFT, RIGHT, BOTRIGHT, TOPRIGHT};
+		}
+
+		// prioritize right
+		if (x < target.x) {
+			directions_to_try = {
+				RIGHT, TOPRIGHT, BOTRIGHT, LEFT, BOTLEFT, TOPLEFT};
+
+		}
+	}
+
+	// prioritize down
+	if (y < target.y) {
+		// prioritize down/left
+		if (x > target.x) {
+			if (diff_y >= diff_x) {
+				directions_to_try = {
+					BOTLEFT, BOTRIGHT, LEFT, RIGHT, TOPLEFT, TOPRIGHT};
+			}
+			else {
+				directions_to_try = {
+					BOTLEFT, LEFT, TOPLEFT, BOTRIGHT, RIGHT, TOPRIGHT};
+
 			}
 		}
 
-		if (y == target.y) // prioritate oriz
-		{
-			if (x > target.x) // prior stg
-			{
-				ordin[0] = LEFT;
-				ordin[1] = RIGHT;
-				ordin[2] = TOPLEFT;
-				ordin[3] = BOTLEFT;
-				ordin[4] = BOTRIGHT;
-				ordin[5] = TOPRIGHT;
+		// prior drp
+		if (x <= target.x) {
+			// prioritize bottom over right
+			if (diff_y >= diff_x) {
+				directions_to_try = {
+					BOTRIGHT, BOTLEFT, RIGHT, LEFT, TOPRIGHT, TOPLEFT};
 			}
-			if (x < target.x) // prior drp
-			{
-				ordin[0] = RIGHT;
-				ordin[1] = LEFT;
-				ordin[2] = TOPRIGHT;
-				ordin[3] = BOTRIGHT;
-				ordin[4] = BOTLEFT;
-				ordin[5] = TOPLEFT;
+			else {
+				directions_to_try = {
+					BOTRIGHT, RIGHT, TOPRIGHT, BOTLEFT, LEFT, TOPLEFT};
+
 			}
 		}
 
-		if (y < target.y) // prioritate jos
-		{
-			// prior stg
-			if (x > target.x) {
-				if (target.y - y >= x - target.x) {
-					ordin[0] = BOTLEFT;
-					ordin[1] = BOTRIGHT;
-					ordin[2] = LEFT;
-					ordin[3] = RIGHT;
-					ordin[4] = TOPLEFT;
-					ordin[5] = TOPRIGHT;
-				}
-				else {
-					ordin[0] = BOTLEFT;
-					ordin[1] = LEFT;
-					ordin[2] = TOPLEFT;
-					ordin[3] = BOTRIGHT;
-					ordin[4] = RIGHT;
-					ordin[5] = TOPRIGHT;
-				}
-			}
+		// up or down
+//		if (x == target.x) {
+//			if (y % 2 == 0) {
+//				directions_to_try = {
+//					BOTRIGHT, BOTLEFT, RIGHT, LEFT, TOPRIGHT, TOPLEFT};
+//
+//			}
+//			else // BOTLEFT
+//			{
+//				directions_to_try = {
+//					BOTLEFT, BOTRIGHT, LEFT, RIGHT, TOPLEFT, TOPRIGHT};
+//
+//			}
+//		}
+	}
 
-			// prior drp
-			if (x <= target.x) {
-				// prioritize bottom over right
-				if (target.y - y >= target.x - x) {
-					ordin[0] = BOTRIGHT;
-					ordin[1] = BOTLEFT;
-					ordin[2] = RIGHT;
-					ordin[3] = LEFT;
-					ordin[4] = TOPRIGHT;
-					ordin[5] = TOPLEFT;
-				}
-				else {
-					ordin[0] = BOTRIGHT;
-					ordin[1] = RIGHT;
-					ordin[2] = TOPRIGHT;
-					ordin[3] = BOTLEFT;
-					ordin[4] = LEFT;
-					ordin[5] = TOPLEFT;
-				}
-			}
-
-			// up or down
-			if (x == target.x) {
-				if (y % 2 == 0) {
-					ordin[0] = BOTRIGHT;
-					ordin[1] = BOTLEFT;
-					ordin[2] = RIGHT;
-					ordin[3] = LEFT;
-					ordin[4] = TOPRIGHT;
-					ordin[5] = TOPLEFT;
-				}
-				else // BOTLEFT
-				{
-					ordin[0] = BOTLEFT;
-					ordin[1] = BOTRIGHT;
-					ordin[2] = LEFT;
-					ordin[3] = RIGHT;
-					ordin[4] = TOPLEFT;
-					ordin[5] = TOPRIGHT;
-				}
-			}
-		}
-		for (int k = 0; k <= 5; k++) {
-			int i = ordin[k];
-			if (game.DoesNeighbourExist({x, y}, i)) {
-				Coord nextCell = game.GetNeighbourCell({x, y}, i);
-				PathFinding(target, nextCell.x, nextCell.y, mut, pas + 1);
-			}
+	for (int direction : directions_to_try) {
+		if (game.DoesNeighbourExist({x, y}, direction)) {
+			Coord nextCell = game.GetNeighbourCell({x, y}, direction);
+			PathFinding(target, source, nextCell.x, nextCell.y, mut, pas + 1,
+				pathWasFound);
 		}
 	}
 

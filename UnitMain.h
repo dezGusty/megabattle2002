@@ -75,8 +75,6 @@ public:		// User declarations
 
         Game game;
 
-		bool PathwasFound;
-
 		int SelectedPlayer;
 		int SelectedSlot;
 		int MouseSelectX;
@@ -121,7 +119,7 @@ public:		// User declarations
 		void Muta(int newx,int newy);
 		void MutaUnitate(int newx,int newy);
 		void OrdinSkipTurn();
-		void PathFinding(Coord target, int x,int y,int mut,int pas);
+		void PathFinding(Coord target, Coord source, int x,int y,int mut,int pas, bool& pathWasFound);
 
 		void PlaySoundForAction(SimpleSoundAction action);
 		void RenderBorderAndBackground();
