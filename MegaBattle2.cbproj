@@ -150,6 +150,12 @@
         <None Include="src\hero.h">
             <BuildOrder>11</BuildOrder>
         </None>
+        <CppCompile Include="src\screen2d.cpp">
+            <BuildOrder>20</BuildOrder>
+        </CppCompile>
+        <None Include="src\screen2d.h">
+            <BuildOrder>19</BuildOrder>
+        </None>
         <CppCompile Include="src\soldier.cpp">
             <BuildOrder>8</BuildOrder>
         </CppCompile>

@@ -13,6 +13,7 @@
 // Other includes in this project.
 #include "src/terrain_type.h"
 #include "src/filehelperfunctions.h"
+#include "src/screen2d.h"
 
 #include "UnitMain.h"
 #include "UnitMesaj.h"
@@ -59,10 +60,8 @@ void __fastcall TBattleForm::FormCreate(TObject *Sender) {
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormKeyDown(TObject *Sender, WORD &Key,
 	TShiftState Shift) {
-	if (game.FazaJoc == 0)
+	if (game.FazaJoc == 0) {
 		IntraInJoc();
-	else {
-		// ignore
 	}
 }
 
@@ -71,27 +70,31 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 	TShiftState Shift, int X, int Y) {
 	if (game.FazaJoc == 0) {
 		IntraInJoc();
+		return;
 	}
-	else if (game.WaitingForOrder) {
+
+	if (game.WaitingForOrder) {
+        Coord map_coords = Screen2D::GetGameHexFromScreenCoords(Coord{X, Y});
+
 		if (Button == mbLeft) {
 			if (X > 20 && X < 780 && Y > 110 && Y < 530 && Cursor != TCursor(3))
 			{
 				// mutare
 				if (Cursor == TCursor(1)) {
-					if (ExistaCoord(X, Y)) {
-						Muta(GetPosX(X, Y), GetPosY(X, Y));
+					if (Screen2D::CanMapScreenCoordsToMap(Coord{X, Y})) {
+						Muta(map_coords.x, map_coords.y);
 					}
 				}
 				// atac
 				if (Cursor == TCursor(2)) {
-					if (ExistaCoord(X, Y)) {
+					if (Screen2D::CanMapScreenCoordsToMap(Coord{X, Y})) {
 						if (Player[SelectedPlayer]->army_slots[SelectedSlot]
 							->Ranged && Player[SelectedPlayer]->army_slots
 							[SelectedSlot]->Ammo > 0) {
-							AtacArcas(GetPosX(X, Y), GetPosY(X, Y));
+							AtacArcas(map_coords.x, map_coords.y);
 						}
 						else {
-							AtacNormal(GetPosX(X, Y), GetPosY(X, Y));
+							AtacNormal(map_coords.x, map_coords.y);
 						}
 					}
 				}
@@ -107,12 +110,10 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 		}
 		if (Button == mbRight) {
 			if (X > 20 && X < 780 && Y > 110 && Y < 530)
-				if (ExistaCoord(X, Y)) {
-					int ax = GetPosX(X, Y);
-					int ay = GetPosY(X, Y);
-					if (game.teren[ax][ay]) {
-						int tjuc = game.teren[ax][ay] / 20;
-						int tlot = game.teren[ax][ay] % 10;
+				if (Screen2D::CanMapScreenCoordsToMap(Coord{X, Y})) {
+					if (game.teren[map_coords.x][map_coords.y]) {
+						int tjuc = game.teren[map_coords.x][map_coords.y] / 20;
+						int tlot = game.teren[map_coords.x][map_coords.y] % 10;
 						TMesaj *UnMesaj = new TMesaj(this, tjuc, tlot);
 						UnMesaj->ShowModal();
 						delete UnMesaj;
@@ -125,15 +126,15 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 						bool pathWasFound = false;
 						Coord source_coord = Coord {Player[SelectedPlayer]->army_slots[SelectedSlot]->x, Player[SelectedPlayer]->army_slots[SelectedSlot]->y};
 						std::vector<Coord> debug_path = game.SearchPathOnMap(
-							source_coord, Coord {ax, ay}, mt, pathWasFound);
+							source_coord, map_coords, mt, pathWasFound);
 
 						if (pathWasFound) {
-							std::stringstream ss;
+//							std::stringstream ss;
 							for (auto coord : debug_path) {
 								RenderSingleHex(Canvas, coord.x, coord.y, 2);
-								ss << "- " << coord.x << ", " << coord.y  << std::endl;
+//								ss << "- " << coord.x << ", " << coord.y  << std::endl;
 							}
-							Canvas->TextOut(800, 25, ss.str().c_str());
+//							Canvas->TextOut(800, 25, ss.str().c_str());
 						}
 
 					}
@@ -144,57 +145,56 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormMouseMove(TObject *Sender, TShiftState Shift,
-	int X, int Y) {
-	if (game.WaitingForOrder) {
-		MouseX = X;
-		MouseY = Y;
-		if (ExistaCoord(MouseX, MouseY)) {
-			int fx = GetPosX(MouseX, MouseY);
-			int fy = GetPosY(MouseX, MouseY);
-			switch (game.selected[fx][fy]) {
-			case 1:
-				if (MouseSelectX != fx || MouseSelectY != fy) {
-					if (MouseSelectX != -84) {
-						DesenHexCopy(MouseSelectX, MouseSelectY, 2);
-					}
-					MouseSelectX = fx;
-					MouseSelectY = fy;
-					RenderSingleHex(Canvas, MouseSelectX, MouseSelectY, 4);
-					Cursor = TCursor(1);
-				}
-				break;
-			case 2: {
-					Cursor = TCursor(2);
-					if (MouseSelectX != -84)
-						DesenHexCopy(MouseSelectX, MouseSelectY, 2);
-					MouseSelectX = -84;
-				} break;
-			case 0:
-				_CursoareSet0();
-				break;
-			}
-		}
-		else {
-			_CursoareSet0();
-        }
+	int mouse_x, int mouse_y) {
+	if (!game.WaitingForOrder) {
+		return;
+	}
 
-		// butoane logice
-		if (game.FazaJoc == 1) {
-			for (int i = 0; i <= 1; i++) {
-				if (X > button[i]->Left && X < button[i]->Right && Y >
-					button[i]->Top && Y < button[i]->Bottom) {
-					if (button[i]->Phase == 0) {
-						button[i]->Phase = 1;
-						button[i]->Draw(ImagButon, CanvasLucru);
-						Canvas->CopyRect(button[i]->GetRect(), CanvasLucru,
-							button[i]->GetRect());
-					}
+	if (Screen2D::CanMapScreenCoordsToMap(Coord{mouse_x, mouse_y})) {
+		Coord map_coords = Screen2D::GetGameHexFromScreenCoords(Coord{mouse_x, mouse_y});
+		switch (game.selected[map_coords.x][map_coords.y]) {
+		case 1:
+			if (MouseSelectX != map_coords.x || MouseSelectY != map_coords.y) {
+				if (MouseSelectX != -84) {
+					DesenHexCopy(MouseSelectX, MouseSelectY, 2);
 				}
-				else if (button[i]->Phase == 1) {
-					button[i]->Phase = 0;
-					button[i]->Draw(ImagButon, Canvas);
+				MouseSelectX = map_coords.x;
+				MouseSelectY = map_coords.y;
+				RenderSingleHex(Canvas, MouseSelectX, MouseSelectY, 4);
+				Cursor = TCursor(1);
+			}
+			break;
+		case 2: {
+				Cursor = TCursor(2);
+				if (MouseSelectX != -84)
+					DesenHexCopy(MouseSelectX, MouseSelectY, 2);
+				MouseSelectX = -84;
+			} break;
+		case 0:
+			_CursoareSet0();
+			break;
+		}
+	}
+	else {
+		_CursoareSet0();
+	}
+
+	// butoane logice
+	if (game.FazaJoc == 1) {
+		for (int i = 0; i <= 1; i++) {
+			if (mouse_x > button[i]->Left && mouse_x < button[i]->Right && mouse_y >
+				button[i]->Top && mouse_y < button[i]->Bottom) {
+				if (button[i]->Phase == 0) {
+					button[i]->Phase = 1;
+					button[i]->Draw(ImagButon, CanvasLucru);
+					Canvas->CopyRect(button[i]->GetRect(), CanvasLucru,
+						button[i]->GetRect());
 				}
-            }
+			}
+			else if (button[i]->Phase == 1) {
+				button[i]->Phase = 0;
+				button[i]->Draw(ImagButon, Canvas);
+			}
 		}
 	}
 }
@@ -786,46 +786,6 @@ void TBattleForm::ExecutaAtac(int tx, int ty, bool range) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-inline bool TBattleForm::ExistaCoord(int mx, int my) {
-	bool ret = true;
-	if (mx > 20 && mx < 780 && my > 110 && my < 530) {
-		int fx = mx - 20;
-		int fy = my - 110;
-		fy /= 60;
-		if ((fy % 2 == 1 && mx < 60) || (fy % 2 == 0 && mx > 740)) {
-			ret = false;
-		}
-	}
-	else {
-		ret = false;
-	}
-	return ret;
-}
-
-// ---------------------------------------------------------------------------
-inline int TBattleForm::GetPosX(int mx, int my) {
-	int ret = 0;
-	int fx = mx - 20;
-	int fy = my - 110;
-	fy /= 60;
-	if (fy % 2 == 1)
-		fx -= 40;
-	fx /= 80;
-	ret = fx;
-	return ret;
-}
-
-// ---------------------------------------------------------------------------
-inline int TBattleForm::GetPosY(int mx, int my) {
-	int ret = 0;
-	int fy = my - 110;
-	fy /= 60;
-	ret = fy;
-	return ret;
-}
-
-
 //---------------------------------------------------------------------------
 void TBattleForm::IntraInJoc() {
 	game.LoadBattleIniFile();
@@ -866,7 +826,7 @@ void TBattleForm::IntraInJoc() {
 	}
 
 	_CursoareInitializari();
-	_InitializariMatrice();
+//	_InitializariMatrice();
 	game.ResetSelectionMatrix();
 //	_DesenUnitati();
 

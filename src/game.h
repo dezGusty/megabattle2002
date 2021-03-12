@@ -12,9 +12,6 @@ enum HexDirection {
 	Right = 4, TopRight = 5
 };
 
-#define STG    1
-#define DRP    4
-
 #define TOPLEFT  0
 #define LEFT     1
 #define BOTLEFT  2
