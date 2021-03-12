@@ -81,7 +81,6 @@ public:		// User declarations
 		int MouseSelectY;
 		int MouseX;
 		int MouseY;
-		Coord path[15];
         TLogicButton *button[2];
 
         TCanvas *CanvasLucru;
@@ -119,7 +118,6 @@ public:		// User declarations
 		void Muta(int newx,int newy);
 		void MutaUnitate(int newx,int newy);
 		void OrdinSkipTurn();
-		void PathFinding(Coord target, Coord source, int x,int y,int mut,int pas, bool& pathWasFound);
 
 		void PlaySoundForAction(SimpleSoundAction action);
 		void RenderBorderAndBackground();

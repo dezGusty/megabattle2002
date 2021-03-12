@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "src/coord.h"
 #include "src/hero.h"
@@ -24,14 +25,16 @@ enum HexDirection {
 #define MAP_WIDTH 9
 #define MAP_HEIGHT 7
 
+/**
+	Main game logic handling class.
+	Should contain all data to allow the representation of the game map and units and basic operations.
+
+	Should not contain any rendering engine specifics (E.g. 2D/3D).
+*/
 class Game {
 public:
 	Game();
 	~Game();
-
-	// TODO: move functionality from UnitMain; refactor into single function.
-	int GetX(int x, int y, int dir);
-	int GetY(int x, int y, int dir);
 
 	/**
 		Get a neighbouring cell for a source cell, in a desired target direction.
@@ -111,5 +114,8 @@ public:
     void ResetSelectionMatrix();
 	void MarkCellForRangedAttack(unsigned cell_x, unsigned cell_y);
 
-    void PathFinding(int x, int y, int mut, int pas);
+	void SearchPathOnCachedMap(Coord source, Coord target, Coord current_pos, int max_moves, int step, bool& path_found, std::vector<Coord> &path);
+
+	std::vector<Coord> SearchPathOnMap(Coord source, Coord target, int max_moves, bool& path_found);
+
 };

@@ -123,25 +123,18 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 							->MovesLeft;
 
 						bool pathWasFound = false;
-						PathFinding(
-							Coord {ax, ay},
-							Coord {Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
-							Player[SelectedPlayer]->army_slots[SelectedSlot]->y},
-							Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
-							Player[SelectedPlayer]->army_slots[SelectedSlot]->y,
-							mt,
-							0,
-							pathWasFound);
+						Coord source_coord = Coord {Player[SelectedPlayer]->army_slots[SelectedSlot]->x, Player[SelectedPlayer]->army_slots[SelectedSlot]->y};
+						std::vector<Coord> debug_path = game.SearchPathOnMap(
+							source_coord, Coord {ax, ay}, mt, pathWasFound);
 
-						std::stringstream ss;
-						for (int i = 1; i <= mt; i++) {
-							// show hex
-							RenderSingleHex(Canvas, path[i].x, path[i].y, 2);
-							ss << "- " << path[i].x << ", " << path[i]
-								.y << std::endl;
-
+						if (pathWasFound) {
+							std::stringstream ss;
+							for (auto coord : debug_path) {
+								RenderSingleHex(Canvas, coord.x, coord.y, 2);
+								ss << "- " << coord.x << ", " << coord.y  << std::endl;
+							}
+							Canvas->TextOut(800, 25, ss.str().c_str());
 						}
-						Canvas->TextOut(800, 25, ss.str().c_str());
 
 					}
 				}
@@ -602,24 +595,25 @@ void TBattleForm::AtacArcas(int tintax, int tintay) {
 void TBattleForm::AtacNormal(int tintax, int tintay) {
 	int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
 
-	Coord source = { Player[SelectedPlayer]->army_slots[SelectedSlot]->x, Player[SelectedPlayer]->army_slots[SelectedSlot]->y };
+	Coord source_coord = {
+		Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+			Player[SelectedPlayer]->army_slots[SelectedSlot]->y};
 	bool pathWasFound = false;
-	PathFinding(
-		Coord {tintax, tintay}, 
-		source,
-		source.x,
-		source.y, mt, 0, pathWasFound);
+
+	std::vector<Coord>atack_path = game.SearchPathOnMap(
+		source_coord, Coord{tintax, tintay}, mt, pathWasFound);
+	// we have the full path to the target.
+	// remove the target from the array so that the current unit won't go on top of it.
+	if (pathWasFound) {
+        atack_path.pop_back();
+	}
 
 	StergeHexuriSelectate();
-	for (int i = 1; i <= mt; i++) {
-		if (tintax == path[i].x && tintay == path[i].y) {
-			i = mt + 1;
-		}
-		else {
-			MutaUnitate(path[i].x, path[i].y);
-		}
+	for (auto coord : atack_path) {
+		MutaUnitate(coord.x, coord.y);
 		::Sleep(75);
 	}
+
 	ExecutaAtac(tintax, tintay, false);
 	DesenHexuriSelectate();
 	::Sleep(100);
@@ -935,18 +929,17 @@ inline void TBattleForm::Muta(int newx, int newy) {
 	int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
 
 	bool pathWasFound = false;
-	Coord source {Player[SelectedPlayer]->army_slots[SelectedSlot]->x, Player[SelectedPlayer]->army_slots[SelectedSlot]->y};
-	PathFinding(Coord {newx, newy}, source,
-		source.x,
-		source.y, mt, 0, pathWasFound);
+	Coord source_coord {Player[SelectedPlayer]->army_slots[SelectedSlot]->x, Player[SelectedPlayer]->army_slots[SelectedSlot]->y};
+
+	std::vector<Coord> move_path = game.SearchPathOnMap(
+		source_coord, Coord {newx, newy}, mt, pathWasFound);
 
 	StergeHexuriSelectate();
-	for (int i = 1; i <= mt; i++) {
-		MutaUnitate(path[i].x, path[i].y);
-		if (newx == path[i].x && newy == path[i].y)
-			i = mt + 1;
+	for (auto coord : move_path) {
+		MutaUnitate(coord.x, coord.y);
 		::Sleep(50);
 	}
+
 	DesenHexuriSelectate();
 	::Sleep(100);
 	SelecteazaUrmator();
@@ -972,152 +965,6 @@ void TBattleForm::OrdinSkipTurn() {
 	SelecteazaUrmator();
 }
 
-// ---------------------------------------------------------------------------
-inline void TBattleForm::PathFinding(Coord target, Coord source, int x, int y, int mut, int pas, bool& pathWasFound) {
-	if (pathWasFound) {
-		return;
-	}
-
-	if (pas > mut) {
-		return;
-	}
-
-	// default directions (and order in which to try them)
-	std::vector<int>directions_to_try = {TOPLEFT, LEFT, BOTLEFT, TOPRIGHT, RIGHT, BOTRIGHT};
-
-	// TODO:path is global?
-	if (target.x == x && target.y == y) {
-		path[pas].x = x;
-		path[pas].y = y;
-		pathWasFound = true;
-		return;
-	}
-
-	// if the terrain is occupied, you can't use it.
-	if (game.teren[x][y] != 0) {
-		// unless you are the one occupying it
-		if (x != source.x || y != source.y) {
-			return;
-		}
-	}
-
-	path[pas].x = x;
-	path[pas].y = y;
-
-	// Check how far we are from each target (x and y).
-	// The more sizeable difference can be used with priority.
-	int diff_x = abs(x - target.x);
-	int diff_y = abs(y - target.y);
-
-	// prioritize going up
-	if (y > target.y) {
-		// prioritize going up/left
-		if (x > target.x) {
-			if (diff_x > diff_y) {
-				directions_to_try = {
-					TOPLEFT, LEFT, BOTLEFT, TOPRIGHT, RIGHT, BOTRIGHT};
-			}
-			else {
-				directions_to_try = {
-					TOPLEFT, TOPRIGHT, LEFT, RIGHT, BOTLEFT, BOTRIGHT};
-			}
-		}
-		// prioritize going up/right
-		if (x < target.x) {
-			if (diff_x > diff_y) {
-				directions_to_try = {
-					TOPRIGHT, RIGHT, BOTRIGHT, TOPLEFT, LEFT, BOTLEFT};
-			}
-			else {
-				directions_to_try = {
-					TOPRIGHT, TOPLEFT, RIGHT, LEFT, BOTRIGHT, BOTLEFT};
-			}
-		}
-		// prioritize going up
-		if (x == target.x) {
-			if (y % 2 == 0) {
-				// TOPRIGHT
-				directions_to_try = {
-					TOPRIGHT, RIGHT, BOTRIGHT, TOPLEFT, LEFT, BOTLEFT};
-			}
-			else {
-				// TOPLEFT
-				directions_to_try = {
-					TOPLEFT, LEFT, BOTLEFT, TOPRIGHT, RIGHT, BOTRIGHT};
-			}
-		}
-	}
-
-	// prioritize left/right
-	if (y == target.y) {
-		// prioritize left
-		if (x > target.x) {
-			directions_to_try = {
-				LEFT, TOPLEFT, BOTLEFT, RIGHT, BOTRIGHT, TOPRIGHT};
-		}
-
-		// prioritize right
-		if (x < target.x) {
-			directions_to_try = {
-				RIGHT, TOPRIGHT, BOTRIGHT, LEFT, BOTLEFT, TOPLEFT};
-
-		}
-	}
-
-	// prioritize down
-	if (y < target.y) {
-		// prioritize down/left
-		if (x > target.x) {
-			if (diff_y >= diff_x) {
-				directions_to_try = {
-					BOTLEFT, BOTRIGHT, LEFT, RIGHT, TOPLEFT, TOPRIGHT};
-			}
-			else {
-				directions_to_try = {
-					BOTLEFT, LEFT, TOPLEFT, BOTRIGHT, RIGHT, TOPRIGHT};
-
-			}
-		}
-
-		// prior drp
-		if (x <= target.x) {
-			// prioritize bottom over right
-			if (diff_y >= diff_x) {
-				directions_to_try = {
-					BOTRIGHT, BOTLEFT, RIGHT, LEFT, TOPRIGHT, TOPLEFT};
-			}
-			else {
-				directions_to_try = {
-					BOTRIGHT, RIGHT, TOPRIGHT, BOTLEFT, LEFT, TOPLEFT};
-
-			}
-		}
-
-		// up or down
-//		if (x == target.x) {
-//			if (y % 2 == 0) {
-//				directions_to_try = {
-//					BOTRIGHT, BOTLEFT, RIGHT, LEFT, TOPRIGHT, TOPLEFT};
-//
-//			}
-//			else // BOTLEFT
-//			{
-//				directions_to_try = {
-//					BOTLEFT, BOTRIGHT, LEFT, RIGHT, TOPLEFT, TOPRIGHT};
-//
-//			}
-//		}
-	}
-
-	for (int direction : directions_to_try) {
-		if (game.DoesNeighbourExist({x, y}, direction)) {
-			Coord nextCell = game.GetNeighbourCell({x, y}, direction);
-			PathFinding(target, source, nextCell.x, nextCell.y, mut, pas + 1,
-				pathWasFound);
-		}
-	}
-
-}
 
 void DeplhiPlaySound(TMediaPlayer* player) {
 	player->Rewind();

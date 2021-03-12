@@ -1,5 +1,7 @@
 #include "game.h"
 
+#include <vector>
+
 #include "src/thirdparty/mini/ini.h"
 
 Game::Game() {
@@ -297,178 +299,142 @@ void Game::ResetSelectionMatrix(){
 
 
 // ---------------------------------------------------------------------------
-void Game::PathFinding(int x, int y, int mut, int pas) {
-//	if (PathwasFound) {
-//		return;
-//	}
-//
-//	if (pas > mut) {
-//		return;
-//	}
-//
-//	path[pas].x = x;
-//	path[pas].y = y;
-//	if (TargetX == x && TargetY == y)
-//		PathwasFound = true;
-//	else if ((game.teren[x][y] == 0) ||
-//		(Player[SelectedPlayer]->army_slots[SelectedSlot]->x == x && Player
-//		[SelectedPlayer]->army_slots[SelectedSlot]->y == y)) {
-//		// prioritise going up
-//		int ordin[6] = {TOPLEFT, TOPRIGHT, LEFT, RIGHT, BOTLEFT, BOTRIGHT};
-//		if (y > TargetY) {
-//			// prioritize going left
-//			if (x > TargetX) {
-//				if (x - TargetX > y - TargetY) {
-//					ordin[0] = TOPLEFT;
-//					ordin[1] = LEFT;
-//					ordin[2] = BOTLEFT;
-//					ordin[3] = TOPRIGHT;
-//					ordin[4] = RIGHT;
-//					ordin[5] = BOTRIGHT;
-//				}
-//				else {
-//					ordin[0] = TOPLEFT;
-//					ordin[1] = TOPRIGHT;
-//					ordin[2] = LEFT;
-//					ordin[3] = RIGHT;
-//					ordin[4] = BOTLEFT;
-//					ordin[5] = BOTRIGHT;
-//				}
-//			}
-//			// prior drp
-//			if (x < TargetX) {
-//				if (TargetX - x > y - TargetY) {
-//					ordin[0] = TOPRIGHT;
-//					ordin[1] = RIGHT;
-//					ordin[2] = BOTRIGHT;
-//					ordin[3] = TOPLEFT;
-//					ordin[4] = LEFT;
-//					ordin[5] = BOTLEFT;
-//				}
-//				else {
-//					ordin[0] = TOPRIGHT;
-//					ordin[1] = TOPLEFT;
-//					ordin[2] = RIGHT;
-//					ordin[3] = LEFT;
-//					ordin[4] = BOTRIGHT;
-//					ordin[5] = BOTLEFT;
-//				}
-//			}
-//			// prior sus
-//			if (x == TargetX) {
-//				if (y % 2 == 0) {
-//					// TOPRIGHT
-//					ordin[0] = TOPRIGHT;
-//					ordin[1] = RIGHT;
-//					ordin[2] = BOTRIGHT;
-//					ordin[3] = TOPLEFT;
-//					ordin[4] = LEFT;
-//					ordin[5] = BOTLEFT;
-//				}
-//				else {
-//					// TOPLEFT
-//					ordin[0] = TOPLEFT;
-//					ordin[1] = LEFT;
-//					ordin[2] = BOTLEFT;
-//					ordin[3] = TOPRIGHT;
-//					ordin[4] = RIGHT;
-//					ordin[5] = BOTRIGHT;
-//				}
-//			}
-//		}
-//
-//		if (y == TargetY) // prioritate oriz
-//		{
-//			if (x > TargetX) // prior stg
-//			{
-//				ordin[0] = LEFT;
-//				ordin[1] = RIGHT;
-//				ordin[2] = TOPLEFT;
-//				ordin[3] = BOTLEFT;
-//				ordin[4] = BOTRIGHT;
-//				ordin[5] = TOPRIGHT;
-//			}
-//			if (x < TargetX) // prior drp
-//			{
-//				ordin[0] = RIGHT;
-//				ordin[1] = LEFT;
-//				ordin[2] = TOPRIGHT;
-//				ordin[3] = BOTRIGHT;
-//				ordin[4] = BOTLEFT;
-//				ordin[5] = TOPLEFT;
-//			}
-//		}
-//
-//		if (y < TargetY) // prioritate jos
-//		{
-//			// prior stg
-//			if (x > TargetX) {
-//				if (TargetY - y >= x - TargetX) {
-//					ordin[0] = BOTLEFT;
-//					ordin[1] = BOTRIGHT;
-//					ordin[2] = LEFT;
-//					ordin[3] = RIGHT;
-//					ordin[4] = TOPLEFT;
-//					ordin[5] = TOPRIGHT;
-//				}
-//				else {
-//					ordin[0] = BOTLEFT;
-//					ordin[1] = LEFT;
-//					ordin[2] = TOPLEFT;
-//					ordin[3] = BOTRIGHT;
-//					ordin[4] = RIGHT;
-//					ordin[5] = TOPRIGHT;
-//				}
-//			}
-//
-//			// prior drp
-//			if (x <= TargetX) {
-//				if (TargetY - y >= TargetX - x) {
-//					ordin[0] = BOTRIGHT;
-//					ordin[1] = BOTLEFT;
-//					ordin[2] = RIGHT;
-//					ordin[3] = LEFT;
-//					ordin[4] = BOTLEFT;
-//					ordin[5] = TOPLEFT;
-//				}
-//				else {
-//					ordin[0] = BOTRIGHT;
-//					ordin[1] = RIGHT;
-//					ordin[2] = TOPRIGHT;
-//					ordin[3] = BOTLEFT;
-//					ordin[4] = LEFT;
-//					ordin[5] = TOPLEFT;
-//				}
-//			}
-//
-//			// BOTRIGHT
-//			if (x == TargetX) {
-//				if (y % 2 == 0) {
-//					ordin[0] = BOTRIGHT;
-//					ordin[1] = BOTLEFT;
-//					ordin[2] = RIGHT;
-//					ordin[3] = LEFT;
-//					ordin[4] = BOTLEFT;
-//					ordin[5] = TOPLEFT;
-//				}
-//				else // BOTLEFT
-//				{
-//					ordin[0] = BOTLEFT;
-//					ordin[1] = BOTRIGHT;
-//					ordin[2] = LEFT;
-//					ordin[3] = RIGHT;
-//					ordin[4] = TOPLEFT;
-//					ordin[5] = TOPRIGHT;
-//				}
-//			}
-//		}
-//		for (int k = 0; k <= 5; k++) {
-//			int i = ordin[k];
-//			if (game.DoesNeighbourExist({x, y}, i)) {
-//				Coord nextCell = game.GetNeighbourCell({x, y}, i);
-//				PathFinding(nextCell.x, nextCell.y, mut, pas + 1);
-//			}
-//		}
-//	}
 
+
+// ---------------------------------------------------------------------------
+std::vector<Coord> Game::SearchPathOnMap(Coord source, Coord target, int max_moves, bool& path_found) {
+	std::vector<Coord> result;
+
+	this->SearchPathOnCachedMap(source, target, source, max_moves, 0, path_found, result);
+	std::reverse(begin(result),end(result));
+	return result;
+}
+
+void Game::SearchPathOnCachedMap(Coord source, Coord target, Coord current_pos, int max_moves, int step, bool& path_found, std::vector<Coord> &path) {
+
+	if (path_found) {
+		return;
+	}
+
+	if (step > max_moves) {
+		return;
+	}
+
+	// default directions (and order in which to try them)
+	std::vector<int>directions_to_try = {TOPLEFT, LEFT, BOTLEFT, TOPRIGHT, RIGHT, BOTRIGHT};
+
+	if (target.x == current_pos.x && target.y == current_pos.y) {
+        path.clear();
+		path.emplace_back(current_pos);
+		path_found = true;
+		return;
+	}
+
+	// if the terrain is occupied, you can't use it.
+	if (this->teren[current_pos.x][current_pos.y] != 0) {
+		// unless you are the one occupying it
+		if (current_pos.x != source.x || current_pos.y != source.y) {
+			return;
+		}
+	}
+
+	// Check how far we are from each target (x and y).
+	// The more sizeable difference can be used with priority.
+	int diff_x = abs(current_pos.x - target.x);
+	int diff_y = abs(current_pos.y - target.y);
+
+	// prioritize going up
+	if (current_pos.y > target.y) {
+		// prioritize going up/left
+		if (current_pos.x > target.x) {
+			if (diff_x > diff_y) {
+				directions_to_try = {
+					TOPLEFT, LEFT, BOTLEFT, TOPRIGHT, RIGHT, BOTRIGHT};
+			}
+			else {
+				directions_to_try = {
+					TOPLEFT, TOPRIGHT, LEFT, RIGHT, BOTLEFT, BOTRIGHT};
+			}
+		}
+		// prioritize going up/right
+		if (current_pos.x < target.x) {
+			if (diff_x > diff_y) {
+				directions_to_try = {
+					TOPRIGHT, RIGHT, BOTRIGHT, TOPLEFT, LEFT, BOTLEFT};
+			}
+			else {
+				directions_to_try = {
+					TOPRIGHT, TOPLEFT, RIGHT, LEFT, BOTRIGHT, BOTLEFT};
+			}
+		}
+		// prioritize going up
+		if (current_pos.x == target.x) {
+			if (current_pos.y % 2 == 0) {
+				// TOPRIGHT
+				directions_to_try = {
+					TOPRIGHT, RIGHT, BOTRIGHT, TOPLEFT, LEFT, BOTLEFT};
+			}
+			else {
+				// TOPLEFT
+				directions_to_try = {
+					TOPLEFT, LEFT, BOTLEFT, TOPRIGHT, RIGHT, BOTRIGHT};
+			}
+		}
+	}
+
+	// prioritize left/right
+	if (current_pos.y == target.y) {
+		// prioritize left
+		if (current_pos.x > target.x) {
+			directions_to_try = {
+				LEFT, TOPLEFT, BOTLEFT, RIGHT, BOTRIGHT, TOPRIGHT};
+		}
+
+		// prioritize right
+		if (current_pos.x < target.x) {
+			directions_to_try = {
+				RIGHT, TOPRIGHT, BOTRIGHT, LEFT, BOTLEFT, TOPLEFT};
+
+		}
+	}
+
+	// prioritize down
+	if (current_pos.y < target.y) {
+		// prioritize down/left
+		if (current_pos.x > target.x) {
+			if (diff_y >= diff_x) {
+				directions_to_try = {
+					BOTLEFT, BOTRIGHT, LEFT, RIGHT, TOPLEFT, TOPRIGHT};
+			}
+			else {
+				directions_to_try = {
+					BOTLEFT, LEFT, TOPLEFT, BOTRIGHT, RIGHT, TOPRIGHT};
+
+			}
+		}
+
+		// prior drp
+		if (current_pos.x <= target.x) {
+			// prioritize bottom over right
+			if (diff_y >= diff_x) {
+				directions_to_try = {
+					BOTRIGHT, BOTLEFT, RIGHT, LEFT, TOPRIGHT, TOPLEFT};
+			}
+			else {
+				directions_to_try = {
+					BOTRIGHT, RIGHT, TOPRIGHT, BOTLEFT, LEFT, TOPLEFT};
+
+			}
+		}
+	}
+
+	for (int direction : directions_to_try) {
+		if (this->DoesNeighbourExist(current_pos, direction)) {
+			Coord nextCell = this->GetNeighbourCell(current_pos, direction);
+			this->SearchPathOnCachedMap(source, target, nextCell, max_moves, step + 1,
+				path_found, path);
+		}
+	}
+
+   	path.emplace_back(current_pos);
 }
