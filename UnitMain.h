@@ -51,7 +51,7 @@ __published:	// IDE-managed Components
 		TMenuItem *Surrender1;
 		TMenuItem *N1;
 		TMenuItem *N2;
-		void __fastcall FormCreate(TObject *Sender);
+	TTimer *renderTimer;
 		void __fastcall FormPaint(TObject *Sender);
 		void __fastcall FormKeyDown(TObject *Sender, WORD &Key,
 		  TShiftState Shift);
@@ -65,12 +65,16 @@ __published:	// IDE-managed Components
 		  TShiftState Shift, int X, int Y);
 		void __fastcall AITimerTimer(TObject *Sender);
 		void __fastcall Surrender1Click(TObject *Sender);
+	void __fastcall renderTimerTimer(TObject *Sender);
 private:	// User declarations
 		LPDIRECTDRAW            lpDD;           // DirectDraw object
 		HDC backgrounddc;
 		HBITMAP  bkbmp;
 		HDC workdc;
 		HBITMAP  wkbmp;
+
+		HDC stretchdc;
+        HBITMAP stretchbmp;
 public:		// User declarations
 
         Game game;
@@ -82,7 +86,8 @@ public:		// User declarations
         TLogicButton *button[2];
 
         TCanvas *CanvasLucru;
-        TCanvas *CanvasFundal;
+		TCanvas *CanvasFundal;
+        TCanvas* stretchedCanvas;
         TImage *ImagineTeren;
         TRect allRect;
         TRect battleRect;
@@ -118,9 +123,9 @@ public:		// User declarations
 		void RenderBorderAndBackground();
         void RenderSingleHex(TCanvas* canvas, int x, int y, int fel);
 
+        void RenderScene();
+        void SetUpGameWindow();
 
-		void SeteazaHex(int x,int y,int mut);
-		void SeteazaHex2(int x,int y,int mut,int exdir);
 		void ShowComment(int juc,int lot,int damage,int position);
 		void StergeHexuriSelectate();
 		void Joc();

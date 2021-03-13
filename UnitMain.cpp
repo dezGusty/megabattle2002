@@ -31,6 +31,10 @@ __fastcall TBattleForm::TBattleForm(TComponent* Owner) : TForm(Owner) {
 // ---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormActivate(TObject *Sender) {
 	WindowState = wsMaximized;
+
+    Screen2D::StretchSize = Coord{ ClientWidth, ClientHeight };
+
+	SetUpGameWindow();
 }
 
 // ---------------------------------------------------------------------------
@@ -39,14 +43,23 @@ void __fastcall TBattleForm::FormClose(TObject *Sender, TCloseAction &Action) {
 	DeleteObject(bkbmp);
 	SelectObject(workdc, wkbmp);
 	DeleteObject(wkbmp);
+
+	SelectObject(stretchdc, stretchbmp);
+	DeleteObject(stretchbmp);
+
 	DeleteDC(backgrounddc);
 	DeleteDC(workdc);
+	DeleteDC(stretchdc);
 }
 
 // ---------------------------------------------------------------------------
-void __fastcall TBattleForm::FormCreate(TObject *Sender) {
-	Width = 800;
-	Height = 600;
+
+void TBattleForm::SetUpGameWindow(){
+	// TODO: separate screen size and root (non-upscaled) window size
+
+	Width = Screen2D::StretchSize.x;
+	Height = Screen2D::StretchSize.y;
+
 	Left = 0;
 	Top = 0;
 	game.FazaJoc = 0;
@@ -129,14 +142,10 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 							source_coord, map_coords, mt, pathWasFound);
 
 						if (pathWasFound) {
-//							std::stringstream ss;
 							for (auto coord : debug_path) {
 								RenderSingleHex(Canvas, coord.x, coord.y, 2);
-//								ss << "- " << coord.x << ", " << coord.y  << std::endl;
 							}
-//							Canvas->TextOut(800, 25, ss.str().c_str());
 						}
-
 					}
 				}
 		}
@@ -202,11 +211,19 @@ void __fastcall TBattleForm::FormMouseMove(TObject *Sender, TShiftState Shift,
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormMouseUp(TObject *Sender, TMouseButton Button,
 	TShiftState Shift, int X, int Y) {
-	if (game.WaitingForOrder) { // butoane logice
-		if (button[1]->Phase == 2)
+	if (game.WaitingForOrder) {
+		// react to GUI commands
+		// Skip button
+		if (button[1]->Phase == 2) {
 			OrdinSkipTurn();
-		if (button[0]->Phase == 2)
-			PopupMenu1->Popup(40, 560); // Close();
+		}
+
+		// Menu button
+		if (button[0]->Phase == 2) {
+			PopupMenu1->Popup(40, 560);
+		}
+
+        // Visually react to GUI actions (apply rendering of mouse-up to virtual buttons).
 		for (int i = 0; i <= 1; i++)
 			if (button[i]->Phase == 2) {
 				button[i]->Phase = 0;
@@ -219,7 +236,10 @@ void __fastcall TBattleForm::FormMouseUp(TObject *Sender, TMouseButton Button,
 
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormPaint(TObject *Sender) {
-	Canvas->CopyRect(allRect, CanvasLucru, allRect);
+
+	TRect stretchedRect(0, 0, Screen2D::StretchSize.x, Screen2D::StretchSize.y);
+//	stretchedCanvas->CopyRect(stretchedRect, CanvasLucru, allRect);
+	Canvas->CopyRect(stretchedRect, CanvasLucru, allRect);
 }
 
 // ---------------------------------------------------------------------------
@@ -230,32 +250,47 @@ void __fastcall TBattleForm::AITimerTimer(TObject *Sender) {
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void TBattleForm::_InitializariFundal() {
-	TRect temp(0, 0, 800, 600);
+	TRect temp(0, 0, Screen2D::RootSize.x, Screen2D::RootSize.y);
+
 	allRect = temp;
 	battleRect = temp;
 	battleRect.Bottom -= 50;
+
 	CanvasFundal = new TCanvas;
 	CanvasLucru = new TCanvas;
+	stretchedCanvas = new TCanvas();
+
 	// Setup pt canvasul de fundal
 	/* HDC */ backgrounddc = CreateCompatibleDC(Canvas->Handle);
 	/* HBITMAP */
-	bkbmp = CreateCompatibleBitmap(Canvas->Handle, ClientWidth, ClientHeight);
+	bkbmp = CreateCompatibleBitmap(Canvas->Handle, Screen2D::RootSize.x, Screen2D::RootSize.y);
 	SelectObject(backgrounddc, bkbmp);
 	CanvasFundal->Handle = backgrounddc;
 	// Setup pt canvasul de lucru
 	/* HDC */ workdc = CreateCompatibleDC(Canvas->Handle);
 	/* HBITMAP */
-	wkbmp = CreateCompatibleBitmap(Canvas->Handle, ClientWidth, ClientHeight);
+	wkbmp = CreateCompatibleBitmap(Canvas->Handle, Screen2D::RootSize.x, Screen2D::RootSize.y);
 	SelectObject(workdc, wkbmp);
+
+	// Setup the stretch canvas
+	stretchdc = CreateCompatibleDC(Canvas->Handle);
+	stretchbmp = CreateCompatibleBitmap(Canvas->Handle, ClientWidth, ClientHeight);
+	SelectObject(stretchdc, stretchbmp);
+    stretchedCanvas->Handle = stretchdc;
+
 	CanvasLucru->Handle = workdc;
 	CanvasFundal->Brush->Color = clBlack;
-	CanvasFundal->Rectangle(0, 0, 800, 600);
+	CanvasFundal->Rectangle(0, 0, Screen2D::RootSize.x, Screen2D::RootSize.y);
 	CanvasFundal->Brush->Color = (TColor)RGB(255, 175, 75);
 	CanvasFundal->Font->Color = (TColor)RGB(255, 175, 75);
 	CanvasFundal->Brush->Style = bsClear;
-	CanvasFundal->TextOut(290, 230, "Megalithic Battle 2 v.1.04 sept.2002");
+	CanvasFundal->TextOut(290, 230, "Megalithic Battle 2 v.2.00 mar.2021");
 	CanvasFundal->TextOut(331, 250, "A game by Gusty");
 	CanvasFundal->TextOut(290, 270, "Press a key or click to begin combat");
+	std::stringstream ss;
+	ss << "Using root screen " << Screen2D::RootSize.x << " x " << Screen2D::RootSize.y << ", "
+		<< " displayed as " << Screen2D::StretchSize.x << " x " << Screen2D::StretchSize.y << "." << std::endl;
+	CanvasFundal->TextOut(290, 290, ss.str().c_str());
 	CanvasLucru->CopyRect(allRect, CanvasFundal, allRect);
 }
 
@@ -432,8 +467,8 @@ void TBattleForm::AIAflaOrdin() {
 	AITimer->Enabled = false;
 	int tempx, tempy;
 	int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
-	SeteazaHex(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
-		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt);
+	game.MarkSelectionOnCachedMap(Coord{ Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+		Player[SelectedPlayer]->army_slots[SelectedSlot]->y}, mt, SelectedPlayer);
 
 	if (Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player
 		[SelectedPlayer]->army_slots[SelectedSlot]->Ammo > 0) {
@@ -826,9 +861,8 @@ void TBattleForm::IntraInJoc() {
 	}
 
 	_CursoareInitializari();
-//	_InitializariMatrice();
+
 	game.ResetSelectionMatrix();
-//	_DesenUnitati();
 
 	// display logo
 	CanvasFundal->Draw(50, 550, logoImage->Picture->Bitmap);
@@ -850,8 +884,8 @@ void TBattleForm::Joc() {
 	_DesenUnitati();
 	Canvas->CopyRect(allRect, CanvasLucru, allRect);
 	int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
-	SeteazaHex(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
-		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt);
+	game.MarkSelectionOnCachedMap(Coord { Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+		Player[SelectedPlayer]->army_slots[SelectedSlot]->y}, mt, SelectedPlayer);
 
 	if (Player[SelectedPlayer]->army_slots[SelectedSlot]->Ranged && Player
 		[SelectedPlayer]->army_slots[SelectedSlot]->Ammo > 0)
@@ -1071,8 +1105,8 @@ inline void TBattleForm::SelecteazaUrmator() {
 		if (Player[SelectedPlayer]->control == HUMAN) {
 			int mt = Player[SelectedPlayer]->army_slots[SelectedSlot]
 				->MovesLeft;
-			SeteazaHex(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
-				Player[SelectedPlayer]->army_slots[SelectedSlot]->y, mt);
+			game.MarkSelectionOnCachedMap(Coord{Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
+				Player[SelectedPlayer]->army_slots[SelectedSlot]->y}, mt, SelectedPlayer);
 			if (Player[SelectedPlayer]->army_slots[SelectedSlot]
 				->Ranged && Player[SelectedPlayer]->army_slots[SelectedSlot]
 				->Ammo > 0) {
@@ -1099,56 +1133,6 @@ inline void TBattleForm::SelecteazaUrmator() {
 		message.append("\nCongratulations to the winner!");
 		MessageDlg(message.c_str(), mtInformation, TMsgDlgButtons() << mbOK, 0);
 		Close();
-	}
-}
-
-// ---------------------------------------------------------------------------
-inline void TBattleForm::SeteazaHex(int x, int y, int mut) {
-	if (mut <= 0) {
-		return;
-	}
-	for (int direction = TOPLEFT; direction <= TOPRIGHT; direction++) {
-		if (game.DoesNeighbourExist(Coord {x, y}, direction)) {
-			Coord hex_cell = game.GetNeighbourCell(Coord{x,y}, direction);
-			if (game.teren[hex_cell.x][hex_cell.y]) {
-				if (game.teren[hex_cell.x][hex_cell.y] / 20 != SelectedPlayer) {
-					game.selected[hex_cell.x][hex_cell.y] = 2;
-				}
-				else {
-					game.selected[hex_cell.x][hex_cell.y] = 0;
-				}
-			}
-			else {
-				game.selected[hex_cell.x][hex_cell.y] = 1;
-				SeteazaHex2(hex_cell.x, hex_cell.y, mut - 1, direction);
-			}
-		}
-	}
-}
-
-// ---------------------------------------------------------------------------
-inline void TBattleForm::SeteazaHex2(int x, int y, int mut, int exdir) {
-	if (mut <= 0) {
-		return;
-	}
-	for (int i = TOPLEFT; i <= TOPRIGHT; i++) {
-		if (i != (exdir + 3) % 6) {
-			if (game.DoesNeighbourExist(Coord {x, y}, i)) {
-				Coord hex_cell = game.GetNeighbourCell(Coord{x,y}, i);
-				if (game.teren[hex_cell.x][hex_cell.y]) {
-					if (game.teren[hex_cell.x][hex_cell.y] / 20 != SelectedPlayer) {
-						game.selected[hex_cell.x][hex_cell.y] = 2;
-					}
-					else {
-						game.selected[hex_cell.x][hex_cell.y] = 0;
-					}
-				}
-				else {
-					game.selected[hex_cell.x][hex_cell.y] = 1;
-					SeteazaHex2(hex_cell.x, hex_cell.y, mut - 1, i);
-				}
-			}
-		}
 	}
 }
 
@@ -1230,3 +1214,30 @@ void __fastcall TBattleForm::Surrender1Click(TObject *Sender) {
 	SelecteazaUrmator();
 }
 // ---------------------------------------------------------------------------
+void __fastcall TBattleForm::renderTimerTimer(TObject *Sender)
+{
+	RenderScene();
+}
+//---------------------------------------------------------------------------
+
+
+void TBattleForm::RenderScene(){
+#if 0
+	// Draw everything onto the work canvas
+	if (game.FazaJoc == 1) {
+		RenderBorderAndBackground();
+		if (game.ShowHexes){
+			_DesenHexuri();
+		}
+		_DesenUnitati();
+		DesenHexuriSelectate();
+	}
+
+	// Stretch the contents onto the stretched canvas
+
+	TRect stretchedRect(0, 0, Screen2D::StretchSize.x, Screen2D::StretchSize.y);
+	Canvas->CopyRect(stretchedRect, CanvasLucru, allRect);
+#endif
+}
+// ---------------------------------------------------------------------------
+

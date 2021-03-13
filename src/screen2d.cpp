@@ -1,5 +1,8 @@
 #include "screen2d.h"
 
+Coord Screen2D::RootSize = Coord {800, 600};
+Coord Screen2D::StretchSize = Coord {800, 600};
+
 Coord Screen2D::GetGameHexFromScreenCoords(const Coord& screen_coords){
 	Coord result;
 

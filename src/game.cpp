@@ -438,3 +438,48 @@ void Game::SearchPathOnCachedMap(Coord source, Coord target, Coord current_pos, 
 
    	path.emplace_back(current_pos);
 }
+
+void Game::MarkSelectionOnCachedMap(Coord target, int max_moves, int selected_player_index) {
+	MarkSelectionOnCachedMap(target, max_moves, -1, selected_player_index);
+}
+
+/**
+	Updates the (cached) selection map, and propagates from the given position.
+
+	@param pos Position to mark. Can propagate from it in all directions.
+	@param max_moves How far can the move propagate
+	@param from_direction A direction from which this call was expanded.
+			Will not propagate in that direction.
+	@param selected_player_index The selected player for which the selection is created.
+*/
+void Game::MarkSelectionOnCachedMap(Coord pos, int max_moves, int from_direction, int selected_player_index) {
+	if (max_moves <= 0) {
+		return;
+	}
+
+	for (int direction = TOPLEFT; direction <= TOPRIGHT; direction++) {
+		if (from_direction >=0 && direction == (from_direction + 3) % 6) {
+			// skip processing
+			continue;
+		}
+
+		if (false == this->DoesNeighbourExist(pos, direction)) {
+			continue;
+		}
+
+		Coord hex_cell = this->GetNeighbourCell(pos, direction);
+		if (this->teren[hex_cell.x][hex_cell.y]) {
+			if (this->teren[hex_cell.x][hex_cell.y] / 20 != selected_player_index) {
+				this->selected[hex_cell.x][hex_cell.y] = 2;
+			}
+			else {
+				this->selected[hex_cell.x][hex_cell.y] = 0;
+			}
+		}
+		else {
+			this->selected[hex_cell.x][hex_cell.y] = 1;
+			MarkSelectionOnCachedMap(hex_cell, max_moves - 1, direction, selected_player_index);
+		}
+	}
+}
+

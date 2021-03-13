@@ -115,4 +115,23 @@ public:
 
 	std::vector<Coord> SearchPathOnMap(Coord source, Coord target, int max_moves, bool& path_found);
 
+	/**
+		Updates the (cached) selection map, and propagates from the given position.
+
+		@param pos Position to mark. Can propagate from it in all directions.
+		@param max_moves How far can the move propagate
+		@param selected_player_index The selected player for which the selection is created.
+	*/
+	void MarkSelectionOnCachedMap(Coord pos, int max_moves, int selected_player_index);
+
+	/**
+		Updates the (cached) selection map, and propagates from the given position.
+
+		@param pos Position to mark. Can propagate from it in all directions.
+		@param max_moves How far can the move propagate
+		@param from_direction A direction from which this call was expanded.
+				Will not propagate in that direction.
+		@param selected_player_index The selected player for which the selection is created.
+	*/
+	void MarkSelectionOnCachedMap(Coord pos, int max_moves, int from_direction, int selected_player_index);
 };
