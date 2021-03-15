@@ -22,6 +22,12 @@ enum HexDirection {
 #define MAP_WIDTH 9
 #define MAP_HEIGHT 7
 
+enum GamePhase {
+	LoadingScreen = 0,
+	Battle = 1,
+    GameOver = 2
+};
+
 /**
 	Main game logic handling class.
 	Should contain all data to allow the representation of the game map and units and basic operations.
@@ -97,7 +103,7 @@ public:
 
 	bool LoadBattleIniFile();
 
-	int FazaJoc;
+	GamePhase gamePhase;
 	bool WaitingForOrder;
 
 	Hero *Player[2];
@@ -134,4 +140,6 @@ public:
 		@param selected_player_index The selected player for which the selection is created.
 	*/
 	void MarkSelectionOnCachedMap(Coord pos, int max_moves, int from_direction, int selected_player_index);
+
+	std::vector<Coord> GetSelectedCellsOnCachedMap();
 };

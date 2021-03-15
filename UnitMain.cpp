@@ -62,7 +62,7 @@ void TBattleForm::SetUpGameWindow(){
 
 	Left = 0;
 	Top = 0;
-	game.FazaJoc = 0;
+	game.gamePhase = GamePhase::LoadingScreen;
 	MouseSelectX = -84;
 	MouseSelectY = -84;
 	randomize();
@@ -73,7 +73,7 @@ void TBattleForm::SetUpGameWindow(){
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormKeyDown(TObject *Sender, WORD &Key,
 	TShiftState Shift) {
-	if (game.FazaJoc == 0) {
+	if (game.gamePhase == GamePhase::LoadingScreen) {
 		IntraInJoc();
 	}
 }
@@ -81,7 +81,7 @@ void __fastcall TBattleForm::FormKeyDown(TObject *Sender, WORD &Key,
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 	TShiftState Shift, int X, int Y) {
-	if (game.FazaJoc == 0) {
+	if (game.gamePhase == GamePhase::LoadingScreen) {
 		IntraInJoc();
 		return;
 	}
@@ -189,7 +189,7 @@ void __fastcall TBattleForm::FormMouseMove(TObject *Sender, TShiftState Shift,
 	}
 
 	// butoane logice
-	if (game.FazaJoc == 1) {
+	if (game.gamePhase == GamePhase::Battle) {
 		for (int i = 0; i <= 1; i++) {
 			if (mouse_x > button[i]->Left && mouse_x < button[i]->Right && mouse_y >
 				button[i]->Top && mouse_y < button[i]->Bottom) {
@@ -365,8 +365,8 @@ void TBattleForm::RenderSingleHex(TCanvas *UnCanvas, int cell_x, int cell_y,
 
 // ---------------------------------------------------------------------------
 void TBattleForm::_DesenHexuri() {
-	for (int i = 0; i < 7; i++) {
-		for (int j = 0; j < 9; j++) {
+	for (int i = 0; i < MAP_HEIGHT; i++) {
+		for (int j = 0; j < MAP_WIDTH; j++) {
 			if (!game.selected[j][i]) {
 				RenderSingleHex(CanvasFundal, j, i, 0);
 			}
@@ -380,8 +380,8 @@ void TBattleForm::_DesenHexuri() {
 
 // ---------------------------------------------------------------------------
 void TBattleForm::_DesenUnitati() {
-	for (int j = 0; j < 7; j++)
-		for (int i = 0; i < 9; i++)
+	for (int j = 0; j < MAP_HEIGHT; j++)
+		for (int i = 0; i < MAP_WIDTH; i++)
 			if (game.teren[i][j]) {
 				int tjuc = game.teren[i][j] / 20;
 				int tlot = game.teren[i][j] % 10;
@@ -500,8 +500,8 @@ void TBattleForm::AI_find_target(int &tempx, int &tempy) {
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->DamageMin) / 2;
 	int curent; // slotul inamicului selectat
 	int i, j; // pt parcurgerea matricei
-	for (i = 0; i <= 8; i++)
-		for (j = 0; j <= 6; j++)
+	for (i = 0; i < MAP_WIDTH; i++)
+		for (j = 0; j < MAP_HEIGHT; j++)
 			if (game.selected[i][j] == 2 && game.teren[i][j] && game.teren[i][j]
 				/ 20 == oponent) {
 				int lot = game.teren[i][j] % 10;
@@ -702,8 +702,8 @@ void TBattleForm::DesenHexCopy(int x, int y, int fel) {
 
 //---------------------------------------------------------------------------
 inline void TBattleForm::DesenHexuriSelectate() {
-	for (int j = 0; j < 7; j++)
-		for (int i = 0; i < 9; i++) {
+	for (int j = 0; j < MAP_HEIGHT; j++)
+		for (int i = 0; i < MAP_WIDTH; i++) {
 			if (game.selected[i][j] == 1) {
 				if (game.ShowHexes) {
 					DesenHexCopy(i, j, 2);
@@ -827,7 +827,7 @@ void TBattleForm::IntraInJoc() {
 
 	LoadBattleBackgroundPictureForType(game.felteren);
 
-	game.FazaJoc = 1;
+    game.gamePhase = GamePhase::Battle;
 	RenderBorderAndBackground();
 	if (game.ShowHexes){
 		_DesenHexuri();
@@ -862,7 +862,7 @@ void TBattleForm::IntraInJoc() {
 
 	_CursoareInitializari();
 
-	game.ResetSelectionMatrix();
+//	game.ResetSelectionMatrix();
 
 	// display logo
 	CanvasFundal->Draw(50, 550, logoImage->Picture->Bitmap);
@@ -1024,9 +1024,7 @@ inline void TBattleForm::Selecteaza(int x, int y, bool ShowPlayer, int felhex) {
 		RenderSingleHex(CanvasFundal, x, y, felhex);
 	}
 
-	if (!ShowPlayer && game.teren[x][y]) { // _DesenHex(CanvasFundal,x,y,4);
-	}
-	// desen unitate
+    // desen unitate
 	if (ShowPlayer && game.teren[x][y]) {
 		SoldierDraw(*Player[juc]->army_slots[lot], ImagUnit, CanvasFundal);
 	}
@@ -1176,12 +1174,12 @@ inline void TBattleForm::ShowComment(int juc, int lot, int damage, int position)
 
 // ---------------------------------------------------------------------------
 inline void TBattleForm::StergeHexuriSelectate() {
-	for (int j = 0; j < 7; j++)
-		for (int i = 0; i < 9; i++)
-			if (game.selected[i][j]) {
-				game.selected[i][j] = 0;
-				DesenHexCopy(i, j, 0);
-			}
+	std::vector<Coord> cells = game.GetSelectedCellsOnCachedMap();
+	game.ResetSelectionMatrix();
+	for (Coord cell : cells) {
+		DesenHexCopy(cell.x, cell.y, 0);
+	}
+
 }
 
 // ---------------------------------------------------------------------------
@@ -1222,9 +1220,49 @@ void __fastcall TBattleForm::renderTimerTimer(TObject *Sender)
 
 
 void TBattleForm::RenderScene(){
+	if (game.gamePhase == GamePhase::LoadingScreen) {
+		static int x_append = 3;
+		static int y_append = 3;
+
+		static int x_draw_unit = 100;
+		static int y_draw_unit = 100;
+
+        static int unit_index = random(10);
+
+		if (x_draw_unit <= 0 || x_draw_unit > Screen2D::RootSize.x - 40) {
+			x_append = -x_append;
+		}
+		if (y_draw_unit <= 0 || y_draw_unit > Screen2D::RootSize.y - 100) {
+			y_append = -y_append;
+		}
+
+		x_draw_unit += x_append;
+		y_draw_unit += y_append;
+
+		// Clear the canvas and redraw the text
+		CanvasFundal->Brush->Color = clBlack;
+		CanvasFundal->Rectangle(0, 0, Screen2D::RootSize.x, Screen2D::RootSize.y);
+		CanvasFundal->Brush->Color = (TColor)RGB(255, 175, 75);
+		CanvasFundal->Font->Color = (TColor)RGB(255, 175, 75);
+		CanvasFundal->Brush->Style = bsClear;
+		CanvasFundal->TextOut(290, 230, "Megalithic Battle 2 v.2.00 mar.2021");
+		CanvasFundal->TextOut(331, 250, "A game by Gusty");
+		CanvasFundal->TextOut(290, 270, "Press a key or click to begin combat");
+		std::stringstream ss;
+		ss << "Using root screen " << Screen2D::RootSize.x << " x " << Screen2D::RootSize.y << ", "
+			<< " displayed as " << Screen2D::StretchSize.x << " x " << Screen2D::StretchSize.y << "." << std::endl;
+		CanvasFundal->TextOut(290, 290, ss.str().c_str());
+
+        // Draw a unit on the screen.
+		ImagUnit->Draw(CanvasFundal, x_draw_unit, y_draw_unit, unit_index, true);
+		TRect stretchedRect(0, 0, Screen2D::StretchSize.x, Screen2D::StretchSize.y);
+		stretchedCanvas->CopyRect(stretchedRect, CanvasFundal, allRect);
+		Canvas->CopyRect(stretchedRect, stretchedCanvas, stretchedRect);
+	}
 #if 0
 	// Draw everything onto the work canvas
-	if (game.FazaJoc == 1) {
+	game.gamePhase == GamePhase::LoadingScreen
+	if (game.gamePhase == GamePhase::LoadingScreen) {
 		RenderBorderAndBackground();
 		if (game.ShowHexes){
 			_DesenHexuri();

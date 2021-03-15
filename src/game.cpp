@@ -288,10 +288,9 @@ void Game::MarkCellForRangedAttack(unsigned cell_x, unsigned cell_y) {
 	}
 }
 
-void Game::ResetSelectionMatrix(){
-                           int i, j;
-	for (i = 0; i < 9; i++) {
-		for (j = 0; j < 7; j++) {
+void Game::ResetSelectionMatrix() {
+	for (int i = 0; i < MAP_WIDTH; i++) {
+		for (int j = 0; j < MAP_HEIGHT; j++) {
 			selected[i][j] = 0;
 		}
 	}
@@ -483,3 +482,15 @@ void Game::MarkSelectionOnCachedMap(Coord pos, int max_moves, int from_direction
 	}
 }
 
+std::vector<Coord> Game::GetSelectedCellsOnCachedMap() {
+	std::vector<Coord>results;
+	for (int j = 0; j < MAP_HEIGHT; j++) {
+		for (int i = 0; i < MAP_WIDTH; i++) {
+			if (selected[i][j]) {
+				results.emplace_back(Coord {i, j});
+			}
+		}
+	}
+
+	return results;
+}
