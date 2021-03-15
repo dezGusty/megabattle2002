@@ -83,8 +83,8 @@ public:		// User declarations
 		int SelectedSlot;
 		int MouseSelectX;
 		int MouseSelectY;
-        TLogicButton *button[2];
 
+        DelphiUI* ui;
         TCanvas *CanvasLucru;
 		TCanvas *CanvasFundal;
         TCanvas* stretchedCanvas;
@@ -123,7 +123,8 @@ public:		// User declarations
 		void RenderBorderAndBackground();
         void RenderSingleHex(TCanvas* canvas, int x, int y, int fel);
 
-        void RenderScene();
+		void RenderScene();
+        void RenderLoadingPhaseMessage(TCanvas* canvas);
         void SetUpGameWindow();
 
 		void ShowComment(int juc,int lot,int damage,int position);
@@ -131,7 +132,11 @@ public:		// User declarations
 		void Joc();
         int Victorie();
         void Selecteaza(int x,int y,bool ShowPlayer,int felhex);
-        void SelecteazaUrmator();
+		void SelecteazaUrmator();
+
+		void OnSkipTurnClicked(int);
+		void OnMenuClicked(int);
+
         __fastcall TBattleForm(TComponent* Owner);
 };
 //---------------------------------------------------------------------------

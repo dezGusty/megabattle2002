@@ -80,27 +80,35 @@ void __fastcall TBattleForm::FormKeyDown(TObject *Sender, WORD &Key,
 
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
-	TShiftState Shift, int X, int Y) {
+	TShiftState Shift, int mouse_x, int mouse_y) {
 	if (game.gamePhase == GamePhase::LoadingScreen) {
 		IntraInJoc();
 		return;
 	}
 
+	int mouse_button_idx = -1;
+	if (Button == TMouseButton::mbLeft) {
+		mouse_button_idx = 0;
+	}
+	else if (Button == TMouseButton::mbRight) {
+		mouse_button_idx = 1;
+	}
+	ui->OnMouseDown(mouse_x, mouse_y,  mouse_button_idx);
 	if (game.WaitingForOrder) {
-        Coord map_coords = Screen2D::GetGameHexFromScreenCoords(Coord{X, Y});
+		Coord map_coords = Screen2D::GetGameHexFromScreenCoords(Coord{mouse_x, mouse_y});
 
 		if (Button == mbLeft) {
-			if (X > 20 && X < 780 && Y > 110 && Y < 530 && Cursor != TCursor(3))
+			if (mouse_x > 20 && mouse_x < 780 && mouse_y > 110 && mouse_y < 530 && Cursor != TCursor(3))
 			{
 				// mutare
 				if (Cursor == TCursor(1)) {
-					if (Screen2D::CanMapScreenCoordsToMap(Coord{X, Y})) {
+					if (Screen2D::CanMapScreenCoordsToMap(Coord{mouse_x, mouse_y})) {
 						Muta(map_coords.x, map_coords.y);
 					}
 				}
 				// atac
 				if (Cursor == TCursor(2)) {
-					if (Screen2D::CanMapScreenCoordsToMap(Coord{X, Y})) {
+					if (Screen2D::CanMapScreenCoordsToMap(Coord{mouse_x, mouse_y})) {
 						if (Player[SelectedPlayer]->army_slots[SelectedSlot]
 							->Ranged && Player[SelectedPlayer]->army_slots
 							[SelectedSlot]->Ammo > 0) {
@@ -112,18 +120,11 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 					}
 				}
 			}
-			// butoane logice
-			for (int i = 0; i <= 1; i++)
-				if (button[i]->Phase == 1) {
-					button[i]->Phase = 2;
-					button[i]->Draw(ImagButon, CanvasLucru);
-					Canvas->CopyRect(button[i]->GetRect(), CanvasLucru,
-						button[i]->GetRect());
-				}
 		}
+
 		if (Button == mbRight) {
-			if (X > 20 && X < 780 && Y > 110 && Y < 530)
-				if (Screen2D::CanMapScreenCoordsToMap(Coord{X, Y})) {
+			if (mouse_x > 20 && mouse_x < 780 && mouse_y > 110 && mouse_y < 530)
+				if (Screen2D::CanMapScreenCoordsToMap(Coord{mouse_x, mouse_y})) {
 					if (game.teren[map_coords.x][map_coords.y]) {
 						int tjuc = game.teren[map_coords.x][map_coords.y] / 20;
 						int tlot = game.teren[map_coords.x][map_coords.y] % 10;
@@ -175,8 +176,10 @@ void __fastcall TBattleForm::FormMouseMove(TObject *Sender, TShiftState Shift,
 			break;
 		case 2: {
 				Cursor = TCursor(2);
-				if (MouseSelectX != -84)
+				if (MouseSelectX != -84) {
 					DesenHexCopy(MouseSelectX, MouseSelectY, 2);
+				}
+
 				MouseSelectX = -84;
 			} break;
 		case 0:
@@ -188,30 +191,23 @@ void __fastcall TBattleForm::FormMouseMove(TObject *Sender, TShiftState Shift,
 		_CursoareSet0();
 	}
 
-	// butoane logice
-	if (game.gamePhase == GamePhase::Battle) {
-		for (int i = 0; i <= 1; i++) {
-			if (mouse_x > button[i]->Left && mouse_x < button[i]->Right && mouse_y >
-				button[i]->Top && mouse_y < button[i]->Bottom) {
-				if (button[i]->Phase == 0) {
-					button[i]->Phase = 1;
-					button[i]->Draw(ImagButon, CanvasLucru);
-					Canvas->CopyRect(button[i]->GetRect(), CanvasLucru,
-						button[i]->GetRect());
-				}
-			}
-			else if (button[i]->Phase == 1) {
-				button[i]->Phase = 0;
-				button[i]->Draw(ImagButon, Canvas);
-			}
-		}
-	}
+    this->ui->OnMouseMove(mouse_x, mouse_y);
 }
 
 //---------------------------------------------------------------------------
 void __fastcall TBattleForm::FormMouseUp(TObject *Sender, TMouseButton Button,
-	TShiftState Shift, int X, int Y) {
+	TShiftState Shift, int mouse_x, int mouse_y) {
 	if (game.WaitingForOrder) {
+
+		int mouse_button_idx = -1;
+		if (Button == TMouseButton::mbLeft) {
+			mouse_button_idx = 0;
+		}
+		else if (Button == TMouseButton::mbRight) {
+			mouse_button_idx = 1;
+		}
+		ui->OnMouseUp(mouse_x, mouse_y, mouse_button_idx);
+		#if 0
 		// react to GUI commands
 		// Skip button
 		if (button[1]->Phase == 2) {
@@ -222,15 +218,7 @@ void __fastcall TBattleForm::FormMouseUp(TObject *Sender, TMouseButton Button,
 		if (button[0]->Phase == 2) {
 			PopupMenu1->Popup(40, 560);
 		}
-
-        // Visually react to GUI actions (apply rendering of mouse-up to virtual buttons).
-		for (int i = 0; i <= 1; i++)
-			if (button[i]->Phase == 2) {
-				button[i]->Phase = 0;
-				button[i]->Draw(ImagButon, CanvasLucru);
-				Canvas->CopyRect(button[i]->GetRect(), CanvasLucru,
-					button[i]->GetRect());
-			}
+            #endif
 	}
 }
 
@@ -238,7 +226,6 @@ void __fastcall TBattleForm::FormMouseUp(TObject *Sender, TMouseButton Button,
 void __fastcall TBattleForm::FormPaint(TObject *Sender) {
 
 	TRect stretchedRect(0, 0, Screen2D::StretchSize.x, Screen2D::StretchSize.y);
-//	stretchedCanvas->CopyRect(stretchedRect, CanvasLucru, allRect);
 	Canvas->CopyRect(stretchedRect, CanvasLucru, allRect);
 }
 
@@ -279,18 +266,10 @@ void TBattleForm::_InitializariFundal() {
     stretchedCanvas->Handle = stretchdc;
 
 	CanvasLucru->Handle = workdc;
-	CanvasFundal->Brush->Color = clBlack;
-	CanvasFundal->Rectangle(0, 0, Screen2D::RootSize.x, Screen2D::RootSize.y);
-	CanvasFundal->Brush->Color = (TColor)RGB(255, 175, 75);
-	CanvasFundal->Font->Color = (TColor)RGB(255, 175, 75);
-	CanvasFundal->Brush->Style = bsClear;
-	CanvasFundal->TextOut(290, 230, "Megalithic Battle 2 v.2.00 mar.2021");
-	CanvasFundal->TextOut(331, 250, "A game by Gusty");
-	CanvasFundal->TextOut(290, 270, "Press a key or click to begin combat");
-	std::stringstream ss;
-	ss << "Using root screen " << Screen2D::RootSize.x << " x " << Screen2D::RootSize.y << ", "
-		<< " displayed as " << Screen2D::StretchSize.x << " x " << Screen2D::StretchSize.y << "." << std::endl;
-	CanvasFundal->TextOut(290, 290, ss.str().c_str());
+
+    this->ui = new DelphiUI(CanvasFundal, ImagButon);
+
+	RenderLoadingPhaseMessage(CanvasFundal);
 	CanvasLucru->CopyRect(allRect, CanvasFundal, allRect);
 }
 
@@ -870,7 +849,7 @@ void TBattleForm::IntraInJoc() {
 	Canvas->CopyRect(allRect, CanvasLucru, allRect);
 	Joc();
 }
-
+// ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 void TBattleForm::Joc() {
 	SelectedPlayer = 0;
@@ -896,27 +875,33 @@ void TBattleForm::Joc() {
 	Selecteaza(Player[SelectedPlayer]->army_slots[SelectedSlot]->x,
 		Player[SelectedPlayer]->army_slots[SelectedSlot]->y, 1, 1);
 
-	button[0] = new TLogicButton;
-	button[0]->Left = 0;
-	button[0]->Top = 550;
-	button[0]->Width = 50;
-	button[0]->Height = 50;
-	button[0]->VisibleIndex = 0;
-	button[0]->SelectedIndex = 1;
-	button[0]->PressedIndex = 2;
-	button[0]->Phase = 0;
-	button[0]->Draw(ImagButon, Canvas);
-	button[1] = new TLogicButton;
-	button[1]->Left = 750;
-	button[1]->Top = 550;
-	button[1]->Width = 50;
-	button[1]->Height = 50;
-	button[1]->VisibleIndex = 3;
-	button[1]->SelectedIndex = 4;
-	button[1]->PressedIndex = 5;
-	button[1]->Phase = 0;
-	button[1]->Draw(ImagButon, Canvas);
+	TLogicButton* btn1 = this->ui->CreateAndOwnButton(0, 550, 50, 50);
+	btn1->VisibleIndex = 0;
+	btn1->SelectedIndex = 1;
+	btn1->PressedIndex = 2;
+    using std::placeholders::_1;
+	std::function<void(int)> cb1 (std::bind(&TBattleForm::OnMenuClicked, this, _1));
+	btn1->setCallback(cb1);
+
+	TLogicButton* btn2 = this->ui->CreateAndOwnButton(750, 550, 50, 50);
+	btn2->VisibleIndex = 3;
+	btn2->SelectedIndex = 4;
+	btn2->PressedIndex = 5;
+	using std::placeholders::_1;
+	std::function<void(int)> cb2 (std::bind(&TBattleForm::OnSkipTurnClicked, this, _1));
+	btn2->setCallback(cb2);
 }
+
+//---------------------------------------------------------------------------
+
+void TBattleForm::OnSkipTurnClicked(int){
+	OrdinSkipTurn();
+}
+
+void TBattleForm::OnMenuClicked(int){
+	PopupMenu1->Popup(40, 560);
+}
+
 
 //---------------------------------------------------------------------------
 inline void TBattleForm::Muta(int newx, int newy) {
@@ -1218,6 +1203,24 @@ void __fastcall TBattleForm::renderTimerTimer(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void TBattleForm::RenderLoadingPhaseMessage(TCanvas* canvas) {
+	canvas->Brush->Color = clBlack;
+	canvas->Rectangle(0, 0, Screen2D::RootSize.x, Screen2D::RootSize.y);
+	canvas->Brush->Color = (TColor)RGB(255, 175, 75);
+	canvas->Font->Color = (TColor)RGB(255, 175, 75);
+	canvas->Brush->Style = bsClear;
+	canvas->TextOut(290, 230, "Megalithic Battle 2 v.2.00 mar.2021");
+	canvas->TextOut(331, 250, "A game by Gusty");
+	canvas->TextOut(290, 270, "Press a key or click to begin combat");
+	std::stringstream ss;
+	ss << "Using root screen " << Screen2D::RootSize.x << " x " <<
+		Screen2D::RootSize.y << ", " << " displayed as " <<
+		Screen2D::StretchSize.x << " x " << Screen2D::StretchSize.y << "." <<
+		std::endl;
+	canvas->TextOut(290, 290, ss.str().c_str());
+}
+
+//---------------------------------------------------------------------------
 
 void TBattleForm::RenderScene(){
 	if (game.gamePhase == GamePhase::LoadingScreen) {
@@ -1240,18 +1243,7 @@ void TBattleForm::RenderScene(){
 		y_draw_unit += y_append;
 
 		// Clear the canvas and redraw the text
-		CanvasFundal->Brush->Color = clBlack;
-		CanvasFundal->Rectangle(0, 0, Screen2D::RootSize.x, Screen2D::RootSize.y);
-		CanvasFundal->Brush->Color = (TColor)RGB(255, 175, 75);
-		CanvasFundal->Font->Color = (TColor)RGB(255, 175, 75);
-		CanvasFundal->Brush->Style = bsClear;
-		CanvasFundal->TextOut(290, 230, "Megalithic Battle 2 v.2.00 mar.2021");
-		CanvasFundal->TextOut(331, 250, "A game by Gusty");
-		CanvasFundal->TextOut(290, 270, "Press a key or click to begin combat");
-		std::stringstream ss;
-		ss << "Using root screen " << Screen2D::RootSize.x << " x " << Screen2D::RootSize.y << ", "
-			<< " displayed as " << Screen2D::StretchSize.x << " x " << Screen2D::StretchSize.y << "." << std::endl;
-		CanvasFundal->TextOut(290, 290, ss.str().c_str());
+		RenderLoadingPhaseMessage(CanvasFundal);
 
         // Draw a unit on the screen.
 		ImagUnit->Draw(CanvasFundal, x_draw_unit, y_draw_unit, unit_index, true);
@@ -1278,4 +1270,3 @@ void TBattleForm::RenderScene(){
 #endif
 }
 // ---------------------------------------------------------------------------
-

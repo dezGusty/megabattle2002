@@ -1,49 +1,99 @@
-//---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 #ifndef UTLogicButtonH
 #define UTLogicButtonH
-//---------------------------------------------------------------------------
-class TLogicButton
-{protected:
- int FLeft;
- int FRight;
- int FTop;
- int FBottom;
- int FWidth;
- int FHeight;
- int FPhase;
- int FIndex;
- void SeteazaSTG(int valoare);
- void SeteazaSUS(int valoare);
- void SeteazaDRP(int valoare);
- void SeteazaJOS(int valoare);
- void SeteazaWidth(int valoare);
- void SeteazaHeight(int valoare);
- void SeteazaFaza(int valoare);
- public:
-   TLogicButton()
-   {Left=0;
-    Top=0;
-    Width=10;
-    Height=10;
-    Phase=0;
-   }
-   __property int Left={read=FLeft,write=SeteazaSTG};
-   __property int Top={read=FTop,write=SeteazaSUS};
-   __property int Right={read=FRight,write=SeteazaDRP};
-   __property int Bottom={read=FBottom,write=SeteazaJOS};
-   __property int Height={read=FHeight,write=SeteazaHeight};
-   __property int Width={read=FWidth,write=SeteazaWidth};
-   __property int Phase={read=FPhase,write=SeteazaFaza};
-   TRect GetRect()
-   {TRect ret(Left,Top,Right,Bottom);
-    return ret;
-   }
-   int VisibleIndex;
-   int SelectedIndex;
-   int PressedIndex;
-   void Draw(TImageList *lista,TCanvas *UnCanvas)
-   {lista->Draw(UnCanvas,Left,Top,FIndex,true);
-   }
+// ---------------------------------------------------------------------------
+#include <Vcl.Graphics.hpp>
+#include <Vcl.Controls.hpp>
+
+#include <functional>
+#include <vector>
+
+class DelphiUI;
+class TLogicButton;
+
+class DelphiUI {
+protected:
+	TCanvas* canvas;
+	TImageList* button_image_list_;
+
+	std::vector<TLogicButton*> managed_buttons_;
+public:
+	DelphiUI(TCanvas* target, TImageList* button_image_list);
+	~DelphiUI();
+
+	/**
+		Creates a button and assume ownership of the object
+		(will destroy along with this instance of DelphiUI).
+	*/
+	TLogicButton* CreateAndOwnButton(int left, int top, int width, int height);
+
+    void Render();
+
+	/**
+		Reacts to mouse move events.
+
+		@param mouse_x X axis position of mouse down event.
+		@param mouse_y Y axis position of mouse down event.
+	*/
+	void OnMouseMove(int mouse_x, int mouse_y);
+
+	/**
+		Reacts to mouse down events.
+
+		@param mouse_x X axis position of mouse down event.
+		@param mouse_y Y axis position of mouse down event.
+		@param mouse_btn The mouse button of the event.
+			0: left mouse button.
+			1: right mouse button.
+	*/
+	void OnMouseDown(int mouse_x, int mouse_y, int mouse_btn);
+
+	/**
+		Reacts to mouse down events.
+
+		@param mouse_x X axis position of mouse down event.
+		@param mouse_y Y axis position of mouse down event.
+		@param mouse_btn The mouse button of the event.
+			0: left mouse button.
+			1: right mouse button.
+	*/
+	void OnMouseUp(int mouse_x, int mouse_y, int mouse_btn);
 };
-//---------------------------------------------------------------------------
+
+class TLogicButton {
+protected:
+	int FIndex;
+
+	void SetLeftPosition(int value);
+	void SetTopPosition(int value);
+	void SetWidth(int value);
+	void SeteazaHeight(int valoare);
+	void SeteazaFaza(int valoare);
+
+	std::function<void(int)> callback_;
+
+public:
+	int left_;
+	int top_;
+	int width_;
+	int height_;
+	int phase_;
+
+	TLogicButton(int left, int top, int width, int height);
+	TLogicButton();
+	void setCallback(const std::function<void(int)> &callback){
+	    this->callback_ = callback;
+	}
+
+	void triggerCallback();
+
+	TRect GetRect() const;
+
+	int VisibleIndex;
+	int SelectedIndex;
+	int PressedIndex;
+
+	void Draw(TImageList *lista, TCanvas *UnCanvas);
+};
+// ---------------------------------------------------------------------------
 #endif
