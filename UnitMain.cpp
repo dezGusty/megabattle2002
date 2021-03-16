@@ -63,6 +63,7 @@ void TBattleForm::SetUpGameWindow(){
 	Left = 0;
 	Top = 0;
 	game.gamePhase = GamePhase::LoadingScreen;
+    game.SetHeroFactory(this);
 	MouseSelectX = -84;
 	MouseSelectY = -84;
 	randomize();
@@ -315,7 +316,7 @@ void TBattleForm::RenderBorderAndBackground() {
 
 // ---------------------------------------------------------------------------
 void TBattleForm::RenderSingleHex(TCanvas *UnCanvas, int cell_x, int cell_y,
-	int fel) {
+	int cell_type) {
 
 	auto cell_width = 80;
 	auto cell_height = 60;
@@ -328,7 +329,7 @@ void TBattleForm::RenderSingleHex(TCanvas *UnCanvas, int cell_x, int cell_y,
 	}
 
 	ImagHex->Draw(UnCanvas, x_axis_correction + output_coord_x, output_coord_y,
-		fel, true);
+		cell_type, true);
 
 	if (game.ShowDebugIndices) {
 		std::stringstream ss;
@@ -547,8 +548,8 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 	int mut = Player[SelectedPlayer]->army_slots[SelectedSlot]->MovesLeft;
 	for (int i = 0; i < mut; i++) {
 		int aok = 0;
-		if (moveCell.y > ty) {
-			if (moveCell.x > tx) {
+		if (moveCell.y > opponentCell.y) {
+			if (moveCell.x > opponentCell.x) {
 				if (game.IsNeighbourTerrainAvailable(moveCell, TOPLEFT)) {
 					moveCell = game.GetNeighbourCell(moveCell, TOPLEFT);
 					aok = 1;
@@ -561,8 +562,8 @@ void TBattleForm::AI_GasesteMutare(int &tempx, int &tempy) {
 				}
 			}
 		}
-		if (!aok && moveCell.y == ty) {
-			if (moveCell.x > tx) {
+		if (!aok && moveCell.y == opponentCell.y) {
+			if (moveCell.x > opponentCell.x) {
 				if (game.IsNeighbourTerrainAvailable(moveCell, LEFT)) {
 					moveCell = game.GetNeighbourCell(moveCell, LEFT);
 					aok = 1;
@@ -633,6 +634,11 @@ void TBattleForm::AtacNormal(int tintax, int tintay) {
 	::Sleep(100);
 	SelecteazaUrmator();
 }
+
+Hero* TBattleForm::CreateHero(const std::string& input) {
+	return new THero(input);
+}
+
 
 //---------------------------------------------------------------------------
 void TBattleForm::DesenHexCopy(int x, int y, int fel) {
@@ -815,8 +821,8 @@ void TBattleForm::IntraInJoc() {
 	CanvasLucru->CopyRect(allRect, CanvasFundal, allRect);
 	Canvas->CopyRect(allRect, CanvasLucru, allRect);
 
-	Player[0] = new THero(game.left_player_cfg_file.c_str());
-	Player[1] = new THero(game.right_player_cfg_file.c_str());
+	Player[0] = this->CreateHero(game.left_player_cfg_file.c_str());
+	Player[1] = this->CreateHero(game.right_player_cfg_file.c_str());
 
 	Player[0]->control = HUMAN;
 	Player[0]->player_id = 0;
@@ -856,8 +862,9 @@ void TBattleForm::Joc() {
 	SelectedSlot = 0;
 	game.WaitingForOrder = true;
 	CanvasFundal->Draw(10, 10, ImagineTeren->Picture->Bitmap);
-	if (game.ShowHexes)
+	if (game.ShowHexes) {
 		_DesenHexuri();
+	}
 	_InitializariMatrice();
 	game.ResetSelectionMatrix();
 	_DesenUnitati();
@@ -1251,6 +1258,10 @@ void TBattleForm::RenderScene(){
 		stretchedCanvas->CopyRect(stretchedRect, CanvasFundal, allRect);
 		Canvas->CopyRect(stretchedRect, stretchedCanvas, stretchedRect);
 	}
+	else if (game.gamePhase == GamePhase::Battle) {
+		ui->Render(CanvasLucru);
+		Canvas->CopyRect(allRect, CanvasLucru, allRect);
+    }
 #if 0
 	// Draw everything onto the work canvas
 	game.gamePhase == GamePhase::LoadingScreen

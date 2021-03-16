@@ -4,12 +4,16 @@
 
 #include "src/thirdparty/mini/ini.h"
 
-Game::Game() {
+Game::Game(): hero_factory_(nullptr) {
 
 }
 
 Game::~Game() {
 
+}
+
+void Game::AssignHeroFactory(HeroFactory* hero_factory){
+	this->hero_factory_ = hero_factory;
 }
 
 bool Game::LoadBattleIniFile() {

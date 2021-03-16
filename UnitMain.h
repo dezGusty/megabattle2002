@@ -13,9 +13,11 @@
 
 #include <string>
 
-#include "src/game.h"
-#include "src/simple_sound_action.h"
 #include "src/coord.h"
+#include "src/game.h"
+#include "src/herofactory.h"
+#include "src/simple_sound_action.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -31,7 +33,7 @@
 #include <System.ImageList.hpp>//pt btns
 
 //---------------------------------------------------------------------------
-class TBattleForm : public TForm
+class TBattleForm : public TForm, public HeroFactory
 {
 __published:	// IDE-managed Components
 		TImageList *ImagHex;
@@ -91,7 +93,7 @@ public:		// User declarations
         TImage *ImagineTeren;
         TRect allRect;
         TRect battleRect;
-        THero *Player[2];
+        Hero *Player[2];
 		bool __ExistaPlayer(int juc,int lot){bool ret=true;if(juc>1 ||lot>Player[juc]->angajati) ret=false;return ret;}
 		void _CursoareInitializari();
 		void _CursoareSet0();
@@ -107,6 +109,9 @@ public:		// User declarations
 		void AI_GasesteMutare(int &tempx,int &tempy);
 		void AtacArcas(int tintax,int tintay);
 		void AtacNormal(int tintax,int tintay);
+
+        Hero* CreateHero(const std::string& input);
+
 		void DesenHexCopy(int x, int y, int fel);
 		void DesenHexuriSelectate();
 		void DisplayAtac(int x,int y,int felatac);

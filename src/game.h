@@ -5,6 +5,7 @@
 
 #include "src/coord.h"
 #include "src/hero.h"
+#include "src/herofactory.h"
 #include "src/terrain_type.h"
 
 enum HexDirection {
@@ -35,9 +36,13 @@ enum GamePhase {
 	Should not contain any rendering engine specifics (E.g. 2D/3D).
 */
 class Game {
+private:
+	HeroFactory* hero_factory_;
 public:
 	Game();
 	~Game();
+
+	virtual void AssignHeroFactory(HeroFactory* hero_factory);
 
 	/**
 		Get a neighbouring cell for a source cell, in a desired target direction.

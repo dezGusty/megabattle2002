@@ -27,7 +27,15 @@ public:
 	*/
 	TLogicButton* CreateAndOwnButton(int left, int top, int width, int height);
 
-    void Render();
+	/**
+		Renders the UI
+	*/
+	void Render();
+
+	/**
+		Renders the UI on a custom target.
+	*/
+	void Render(TCanvas* target);
 
 	/**
 		Reacts to mouse move events.
@@ -62,13 +70,12 @@ public:
 
 class TLogicButton {
 protected:
-	int FIndex;
+	int phase_image_idx_;
 
 	void SetLeftPosition(int value);
 	void SetTopPosition(int value);
 	void SetWidth(int value);
 	void SeteazaHeight(int valoare);
-	void SeteazaFaza(int valoare);
 
 	std::function<void(int)> callback_;
 
@@ -82,10 +89,11 @@ public:
 	TLogicButton(int left, int top, int width, int height);
 	TLogicButton();
 	void setCallback(const std::function<void(int)> &callback){
-	    this->callback_ = callback;
+		this->callback_ = callback;
 	}
 
-	void triggerCallback();
+	void TriggerCallback();
+	void SetPhase(int phase_num);
 
 	TRect GetRect() const;
 
