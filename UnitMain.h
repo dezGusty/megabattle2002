@@ -81,20 +81,17 @@ public:		// User declarations
 
         Game game;
 
-		int SelectedPlayer;
-		int SelectedSlot;
 		int MouseSelectX;
 		int MouseSelectY;
 
-        DelphiUI* ui;
-        TCanvas *CanvasLucru;
+		DelphiUI* ui;
+		TCanvas *CanvasLucru;
 		TCanvas *CanvasFundal;
-        TCanvas* stretchedCanvas;
-        TImage *ImagineTeren;
-        TRect allRect;
-        TRect battleRect;
-        Hero *Player[2];
-		bool __ExistaPlayer(int juc,int lot){bool ret=true;if(juc>1 ||lot>Player[juc]->angajati) ret=false;return ret;}
+		TCanvas* stretchedCanvas;
+		TImage *ImagineTeren;
+		TRect allRect;
+		TRect battleRect;
+		Hero *Player[2];
 		void _CursoareInitializari();
 		void _CursoareSet0();
 		void _DesenHexuri();

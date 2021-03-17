@@ -38,9 +38,16 @@ enum GamePhase {
 class Game {
 private:
 	HeroFactory* hero_factory_;
+	std::vector<Hero*> players_;
+
 public:
 	Game();
 	~Game();
+
+	// TODO: make private
+	int active_player_index_;
+	// TODO: make private
+	int active_unit_index_;
 
 	virtual void AssignHeroFactory(HeroFactory* hero_factory);
 

@@ -53,6 +53,15 @@ void DelphiUI::OnMouseMove(int mouse_x, int mouse_y) {
 */
 void DelphiUI::OnMouseDown(int mouse_x, int mouse_y, int mouse_btn) {
 	for (auto widget : this->managed_buttons_) {
+		// if in clicked phase and no longer in bounds, move to normal phase
+		if (widget->phase_ == 2) {
+			if (mouse_x <= widget->left_ || mouse_x >= widget->left_ +
+				widget->width_ || mouse_y <= widget->top_ || mouse_y >= widget->top_ +
+				widget->height_) {
+					widget->SetPhase(0);
+				}
+		}
+		// if in hover/highlighted phase and user just clicked, move to clicked phase
 		if (widget->phase_ == 1) {
 			widget->SetPhase(2);
 		}
