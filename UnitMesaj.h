@@ -11,6 +11,9 @@
 #include <Graphics.hpp>
 #include "UnitMain.h"
 #include <System.ImageList.hpp>
+
+#include "src/soldier.h"
+
 //---------------------------------------------------------------------------
 class TMesaj : public TForm
 {__published:	// IDE-managed Components
@@ -19,11 +22,12 @@ class TMesaj : public TForm
         TImageList *SmallIcons;
         void __fastcall FormPaint(TObject *Sender);
 private:	// User declarations
+        Soldier* soldier_;
         void Deseneaza();
 public:		// User declarations
         int Juc,Lot;
 		int UDamage,UArmor,UProtection,UChance;
-        __fastcall TMesaj(TComponent* Owner,int tjuc,int tlot);
+		__fastcall TMesaj(TComponent* Owner,int tjuc,int tlot, Soldier* soldier);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TMesaj *Mesaj;

@@ -91,7 +91,6 @@ public:		// User declarations
 		TImage *ImagineTeren;
 		TRect allRect;
 		TRect battleRect;
-		Hero *Player[2];
 		void _CursoareInitializari();
 		void _CursoareSet0();
 		void _DesenHexuri();
