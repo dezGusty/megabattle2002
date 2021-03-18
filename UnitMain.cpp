@@ -130,7 +130,7 @@ void __fastcall TBattleForm::FormMouseDown(TObject *Sender, TMouseButton Button,
 						int tjuc = game.teren[map_coords.x][map_coords.y] / 20;
 						int tlot = game.teren[map_coords.x][map_coords.y] % 10;
 
-						TMesaj *UnMesaj = new TMesaj(this, tjuc, tlot, game.players_[tjuc]->army_slots[tlot]);
+						TMesaj *UnMesaj = new TMesaj(this, game.players_[tjuc]->army_slots[tlot]);
 						UnMesaj->ShowModal();
 						delete UnMesaj;
 					}
@@ -1043,7 +1043,7 @@ inline void TBattleForm::Selecteaza(int x, int y, bool ShowPlayer, int felhex) {
 
 // ---------------------------------------------------------------------------
 inline void TBattleForm::SelecteazaUrmator() {
-	int k = Victorie();
+	int k = game.GetVictoryStatus();
 	if (!k) {
 		int exJuc = game.active_player_index_;
 		int exSlot = game.active_unit_index_;
@@ -1188,23 +1188,23 @@ inline void TBattleForm::StergeHexuriSelectate() {
 }
 
 // ---------------------------------------------------------------------------
-int TBattleForm::Victorie() {
-	int ret = 0;
-	int i, alv;
-	alv = 0;
-	for (i = 0; i <= game.players_[0]->angajati; i++)
-		if (game.players_[0]->army_slots[i]->alive)
-			alv = 1;
-	if (!alv)
-		ret = 2;
-	alv = 0;
-	for (i = 0; i <= game.players_[1]->angajati; i++)
-		if (game.players_[1]->army_slots[i]->alive)
-			alv = 1;
-	if (!alv)
-		ret = 1;
-	return ret;
-}
+//int TBattleForm::Victorie() {
+//	int ret = 0;
+//	int i, alv;
+//	alv = 0;
+//	for (i = 0; i <= game.players_[0]->angajati; i++)
+//		if (game.players_[0]->army_slots[i]->alive)
+//			alv = 1;
+//	if (!alv)
+//		ret = 2;
+//	alv = 0;
+//	for (i = 0; i <= game.players_[1]->angajati; i++)
+//		if (game.players_[1]->army_slots[i]->alive)
+//			alv = 1;
+//	if (!alv)
+//		ret = 1;
+//	return ret;
+//}
 // ---------------------------------------------------------------------------
 // #pragma gusend.WINApi32.non-xp,mmxtension
 // ---------------------------------------------------------------------------

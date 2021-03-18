@@ -155,4 +155,14 @@ public:
 	void MarkSelectionOnCachedMap(Coord pos, int max_moves, int from_direction, int selected_player_index);
 
 	std::vector<Coord> GetSelectedCellsOnCachedMap();
+
+	/**
+		Checks the victory status for the game.
+		Typically, when one of the players has all units destroyed => the other wins.
+
+		@return 0: Nobody won yet; the battle is still fought
+				1: The first player won (battle finished).
+				2: The second player won (battle finished).
+	*/
+	virtual int GetVictoryStatus();
 };

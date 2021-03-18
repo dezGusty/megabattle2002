@@ -131,7 +131,7 @@ public:		// User declarations
 		void ShowComment(int juc,int lot,int damage,int position);
 		void StergeHexuriSelectate();
 		void Joc();
-        int Victorie();
+//        int Victorie();
         void Selecteaza(int x,int y,bool ShowPlayer,int felhex);
 		void SelecteazaUrmator();
 

@@ -1,5 +1,6 @@
 #include "game.h"
 
+#include <numeric>
 #include <vector>
 
 #include "src/thirdparty/mini/ini.h"
@@ -497,4 +498,50 @@ std::vector<Coord> Game::GetSelectedCellsOnCachedMap() {
 	}
 
 	return results;
+}
+
+/**
+	Checks the victory status for the game.
+	Typically, when one of the players has all units destroyed => the other wins.
+
+	@return 0: Nobody won yet; the battle is still fought
+			1: The first player won (battle finished).
+			2: The second player won (battle finished).
+*/
+int Game::GetVictoryStatus() {
+	if (this->players_.size() <= 1) {
+		return 1;
+	}
+
+	auto count_alive = [](int sum, Soldier* soldier){
+        return sum + soldier->alive;
+	};
+
+    // count the amount of units alive
+	int alive_count_0 = std::accumulate(
+		players_[0]->army_slots.begin(),
+		players_[0]->army_slots.end(), 0, count_alive);
+
+	int alive_count_1 = std::accumulate(
+		players_[1]->army_slots.begin(),
+		players_[1]->army_slots.end(), 0, count_alive);
+
+	if (0 == alive_count_0 && 0 == alive_count_1) {
+		// both players have 0 units.
+		// how is this even possible?
+		// some spell or delayed ability that can kill both attacking and the defending unit?
+		// for now, just return the first player as a winner.
+		return 1;
+	}
+
+	if (0 == alive_count_0) {
+		return 2;
+	}
+
+	if (0 == alive_count_1) {
+		return 1;
+	}
+
+	// default: no player won.
+	return 0;
 }
