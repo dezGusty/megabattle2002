@@ -9,10 +9,8 @@
 TMesaj *Mesaj;
 
 //---------------------------------------------------------------------------
-__fastcall TMesaj::TMesaj(TComponent* Owner, int tjuc, int tlot,
+__fastcall TMesaj::TMesaj(TComponent* Owner,
 	Soldier* soldier) : TForm(Owner), soldier_(soldier) {
-	Juc = tjuc;
-	Lot = tlot;
 	Caption = "Unit Properties";
 }
 

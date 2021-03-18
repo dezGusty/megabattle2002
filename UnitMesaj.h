@@ -25,9 +25,7 @@ private:	// User declarations
         Soldier* soldier_;
         void Deseneaza();
 public:		// User declarations
-        int Juc,Lot;
-		int UDamage,UArmor,UProtection,UChance;
-		__fastcall TMesaj(TComponent* Owner,int tjuc,int tlot, Soldier* soldier);
+		__fastcall TMesaj(TComponent* Owner, Soldier* soldier);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TMesaj *Mesaj;
